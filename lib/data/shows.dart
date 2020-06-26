@@ -9,6 +9,10 @@ class Shows extends ChangeNotifier {
     return [..._shows];
   }
 
+  Show getShow(int id) {
+    return _shows.firstWhere((element) => element.id == id);
+  }
+
   Shows() {
     _shows = [
       Show(

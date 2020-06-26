@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import './data/shows.dart';
+import './data/episodes.dart';
 
 import './screens/all_shows_screen.dart';
 import './screens/show_detail_screen.dart';
@@ -18,6 +19,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<Shows>(
           create: (_) => Shows(),
+        ),
+        ChangeNotifierProvider<Episodes>(
+          create: (_) => Episodes(),
         )
       ],
       child: MaterialApp(

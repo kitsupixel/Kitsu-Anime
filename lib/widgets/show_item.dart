@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kitsu_anime/screens/show_detail_screen.dart';
 import 'package:meet_network_image/meet_network_image.dart';
 
 import './ink_wrapper.dart';
@@ -23,7 +24,7 @@ class ShowItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWrapper(
       onTap: () {
-
+        Navigator.of(context).pushNamed(ShowDetailScreen.routeName, arguments: id);
       },
           child: Card(
         elevation: 5,
