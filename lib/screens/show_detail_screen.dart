@@ -38,7 +38,7 @@ class ShowDetailScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: MeetNetworkImage(
                 imageUrl: show.thumbnail,
-                fit: BoxFit.fitWidth,
+                fit: BoxFit.fill,
                 loadingBuilder: (context) => Center(
                   child: CircularProgressIndicator(),
                 ),
