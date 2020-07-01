@@ -22,7 +22,7 @@ class Episode {
   });
 
   Episode.fromJson(Map<String, dynamic> json) {
-    id = int.parse(json['id']);
+    id = json['id'];
     showId = int.parse(json['show_id']);
     number = json['number'];
     type = json['type'];

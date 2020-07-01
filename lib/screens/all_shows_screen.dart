@@ -18,20 +18,26 @@ class AllShowsScreen extends StatelessWidget {
     _shows = provider.shows;
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: GridView.builder(
-        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-            childAspectRatio: 2.0 / 3.45, maxCrossAxisExtent: 200,),
-        itemCount: _shows.length,
-        itemBuilder: (ctx, i) {
-          return ShowItem(
-            id: _shows[i].id,
-            title: _shows[i].title,
-            thumbnail: _shows[i].thumbnail,
-            favorite: _shows[i].favorite,
-            watched: _shows[i].watched,
-          );
-        },
-      ),
+      child: _shows.length == 0
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : GridView.builder(
+              gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                childAspectRatio: 2.0 / 3.45,
+                maxCrossAxisExtent: 200,
+              ),
+              itemCount: _shows.length,
+              itemBuilder: (ctx, i) {
+                return ShowItem(
+                  id: _shows[i].id,
+                  title: _shows[i].title,
+                  thumbnail: _shows[i].thumbnail,
+                  favorite: _shows[i].favorite,
+                  watched: _shows[i].watched,
+                );
+              },
+            ),
     );
   }
 }

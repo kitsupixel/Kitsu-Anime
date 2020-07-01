@@ -26,7 +26,7 @@ class Show {
   });
 
   Show.fromJson(Map<String, dynamic> json) {
-    id = int.parse(json['id']);
+    id = json['id'];
     title = json['title'];
     synopsis = json['synopsis'];
     thumbnail = json['thumbnail'];
