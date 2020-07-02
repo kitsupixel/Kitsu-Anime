@@ -50,6 +50,9 @@ dependencies:
   # A Flutter plugin for launching a URL in the mobile platform. Supports iOS and Android.
   url_launcher: ^5.4.11
 
+  # A flutter plugin to stream videos directly from torrent/magnet links.
+  flutter_torrent_streamer: ^0.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
