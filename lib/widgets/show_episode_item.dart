@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
+import '../screens/episode_detail_screen.dart';
+
 import '../data/episodes.dart';
 
 import '../models/episode.dart';
@@ -19,12 +21,14 @@ class ShowEpisodeItem extends StatelessWidget {
     return ListTile(
       onTap: () {
         print("Pressed the episode: " + _episode.number);
+        Navigator.of(context)
+            .pushNamed(EpisodeDetailScreen.routeName, arguments: _episodeId);
       },
       title: Text((_episode.type == 'episode'
               ? "Episode "
               : "Batch ") +
           _episode.number),
-      subtitle: Text(DateFormat.yMd().format(_episode.releasedOn)),
+      subtitle: Text(DateFormat.yMd(Intl.getCurrentLocale()).format(_episode.releasedOn)),
       trailing: Container(
         width: 100,
         child: Row(

@@ -24,7 +24,7 @@ class Link {
   });
 
   Link.fromJson(Map<String, dynamic> json) {
-    id = int.parse(json['id']);
+    id = json['id'];
     episodeId = int.parse(json['episode_id']);
     type = json['type'];
     quality = json['quality'];

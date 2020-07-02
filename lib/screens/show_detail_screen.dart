@@ -1,13 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:meet_network_image/meet_network_image.dart';
 
 import '../data/shows.dart';
 import '../data/episodes.dart';
 
 import '../models/show.dart';
-import '../models/episode.dart';
 
 import '../widgets/show_episode_item.dart';
 
@@ -20,11 +18,6 @@ class ShowDetailScreen extends StatelessWidget {
 
     Show show = Provider.of<Shows>(context, listen: false).getShow(showId);
 
-    AppBar appBarWidget = AppBar(
-      title: Text(show.title),
-      actions: [],
-    );
-
     final mediaQuery = MediaQuery.of(context);
 
     return Scaffold(
@@ -33,21 +26,37 @@ class ShowDetailScreen extends StatelessWidget {
           SliverAppBar(
             pinned: true,
             expandedHeight: 3 * mediaQuery.size.width / 2,
+            title: Text(show.title),
             flexibleSpace: FlexibleSpaceBar(
-              background: MeetNetworkImage(
+              background: CachedNetworkImage(
                 imageUrl: show.thumbnail,
-                fit: BoxFit.fill,
-                loadingBuilder: (context) => Center(
-                  child: CircularProgressIndicator(),
+                fit: BoxFit.fitHeight,
+                progressIndicatorBuilder: (context, url, downloadProgress) =>
+                    Center(
+                  child: CircularProgressIndicator(
+                    value: downloadProgress.progress,
+                  ),
                 ),
-                errorBuilder: (context, e) => Center(
-                  child: Icon(Icons.error),
+                errorWidget: (context, url, error) => Center(
+                  child: Icon(Icons.error, color: Theme.of(context).errorColor),
                 ),
               ),
             ),
             actions: [
-              IconButton(icon: Icon(Icons.remove_red_eye), onPressed: () {}),
-              IconButton(icon: Icon(Icons.star), onPressed: () {})
+              IconButton(
+                  icon: Icon(
+                    Icons.remove_red_eye,
+                    color:
+                        show.watched != true ? Colors.blue[600] : Colors.white,
+                  ),
+                  onPressed: () {}),
+              IconButton(
+                  icon: Icon(
+                    Icons.star,
+                    color:
+                        show.favorite != true ? Colors.red[600] : Colors.white,
+                  ),
+                  onPressed: () {})
             ],
           ),
           SliverList(
@@ -72,13 +81,13 @@ class ShowDetailScreen extends StatelessWidget {
             builder: (ctx, episodeData, ch) {
               final episodes = episodeData.getEpisodesByShow(showId);
               return SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (ctx, i) {
-                          return ShowEpisodeItem(episodes[i].id);
-                        },
-                        childCount: episodes.length,
-                      ),
-                    );
+                delegate: SliverChildBuilderDelegate(
+                  (ctx, i) {
+                    return ShowEpisodeItem(episodes[i].id);
+                  },
+                  childCount: episodes.length,
+                ),
+              );
             },
           )
         ],

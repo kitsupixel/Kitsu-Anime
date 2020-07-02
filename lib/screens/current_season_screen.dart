@@ -7,15 +7,15 @@ import '../models/show.dart';
 
 import '../widgets/shows_list.dart';
 
-class AllShowsScreen extends StatelessWidget {
-  static const routeName = '/shows';
+class CurrentSeasonScreen extends StatelessWidget {
+  static const routeName = '/shows/ongoing';
   
   List<Show> _shows;
 
   @override
-  Widget build(BuildContext context) {
-    _shows = Provider.of<Shows>(context).shows;
-    
+  Widget build(BuildContext context) {  
+    _shows = Provider.of<Shows>(context).currentSeason;
+
     return ShowsList(shows: _shows);
   }
 }

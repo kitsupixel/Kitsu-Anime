@@ -12,6 +12,20 @@ class Shows extends ChangeNotifier {
     return [..._shows];
   }
 
+  List<Show> get currentSeason {
+    DateTime now = new DateTime.now();
+    String currentSeason;
+
+    if (now.month <= 3) currentSeason = 'Winter';
+    else if (now.month <= 6) currentSeason = 'Spring';
+    else if (now.month <= 9) currentSeason = 'Summer';
+    else currentSeason = 'Fall';
+
+    print(now.month.toString() + " " + currentSeason + " " + now.year.toString());
+
+    return _shows.where((element) => (element.season == currentSeason && element.year == now.year) || element.ongoing).toList();
+  }
+
   void _fetchShows() async {
     final response =
         await http.get('https://kpplus.kitsupixel.pt/api/v1/shows');
