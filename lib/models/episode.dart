@@ -7,8 +7,8 @@ class Episode {
   String type;
   DateTime releasedOn;
   DateTime createdAt;
-  bool downloaded;
-  bool seen;
+  bool downloaded = false;
+  bool watched = false;
 
   Episode({
     @required this.id,
@@ -18,7 +18,7 @@ class Episode {
     @required this.releasedOn,
     @required this.createdAt,
     this.downloaded = false,
-    this.seen = false,
+    this.watched = false,
   });
 
   Episode.fromJson(Map<String, dynamic> json) {

@@ -9,8 +9,8 @@ class Show {
   int year;
   bool ongoing;
   bool active;
-  bool favorite;
-  bool watched;
+  bool favorite = false;
+  bool watched = false;
 
   Show({
     @required this.id,

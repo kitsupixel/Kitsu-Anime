@@ -43,20 +43,28 @@ class ShowDetailScreen extends StatelessWidget {
               ),
             ),
             actions: [
-              IconButton(
+              Consumer<Shows>(builder: (ctx, showProvider, ch) {
+                return IconButton(
                   icon: Icon(
                     Icons.remove_red_eye,
-                    color:
-                        show.watched != true ? Colors.blue[600] : Colors.white,
+                    color: showProvider.getShow(showId).watched == true
+                        ? Colors.blue[600]
+                        : Colors.white,
                   ),
-                  onPressed: () {}),
-              IconButton(
+                  onPressed: () => showProvider.toggleWatched(showId),
+                );
+              }),
+              Consumer<Shows>(builder: (ctx, showProvider, ch) {
+                return IconButton(
                   icon: Icon(
                     Icons.star,
-                    color:
-                        show.favorite != true ? Colors.red[600] : Colors.white,
+                    color: showProvider.getShow(showId).favorite == true
+                        ? Colors.red[600]
+                        : Colors.white,
                   ),
-                  onPressed: () {})
+                  onPressed: () => showProvider.toggleFavorite(showId),
+                );
+              }),
             ],
           ),
           SliverList(

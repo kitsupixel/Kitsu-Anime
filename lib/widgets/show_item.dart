@@ -1,7 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:kitsu_anime/screens/show_detail_screen.dart';
-import 'package:meet_network_image/meet_network_image.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+
+import '../data/shows.dart';
+
+import '../screens/show_detail_screen.dart';
 
 import './ink_wrapper.dart';
 
@@ -35,22 +38,43 @@ class ShowItem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 2 / 3,
-              child: CachedNetworkImage(
-                imageUrl: thumbnail,
-                fit: BoxFit.fitWidth,
-                progressIndicatorBuilder: (context, url, downloadProgress) =>
-                    Center(
-                  child: CircularProgressIndicator(
-                    value: downloadProgress.progress,
+            Stack(children: [
+              AspectRatio(
+                aspectRatio: 2 / 3,
+                child: CachedNetworkImage(
+                  imageUrl: thumbnail,
+                  fit: BoxFit.fitWidth,
+                  progressIndicatorBuilder: (context, url, downloadProgress) =>
+                      Center(
+                    child: CircularProgressIndicator(
+                      value: downloadProgress.progress,
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Center(
+                    child:
+                        Icon(Icons.error, color: Theme.of(context).errorColor),
                   ),
                 ),
-                errorWidget: (context, url, error) => Center(
-                  child: Icon(Icons.error, color: Theme.of(context).errorColor),
-                ),
               ),
-            ),
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Consumer<Shows>(builder: (ctx, showProvider, ch) {
+                      return showProvider.getShow(id).favorite == true
+                          ? Icon(Icons.remove_red_eye, color: Colors.blue[600])
+                          : Container();
+                    }),
+                    Consumer<Shows>(builder: (ctx, showProvider, ch) {
+                      return showProvider.getShow(id).favorite == true
+                          ? Icon(Icons.star, color: Colors.red[600])
+                          : Container();
+                    }),
+                  ],
+                ),
+              )
+            ]),
             Flexible(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
