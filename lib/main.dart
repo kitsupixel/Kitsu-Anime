@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:preferences/preferences.dart';
 
 import './data/shows.dart';
 import './data/episodes.dart';
 import './data/links.dart';
 
+import './screens/home_screen.dart';
 import './screens/all_shows_screen.dart';
 import './screens/current_season_screen.dart';
 import './screens/show_detail_screen.dart';
 import './screens/episode_detail_screen.dart';
+import './screens/preferences_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -45,7 +48,8 @@ class MyApp extends StatelessWidget {
         home: Home(),
         routes: {
           ShowDetailScreen.routeName: (ctx) => ShowDetailScreen(),
-          EpisodeDetailScreen.routeName: (ctx) => EpisodeDetailScreen()
+          EpisodeDetailScreen.routeName: (ctx) => EpisodeDetailScreen(),
+          PreferencesScreen.routeName: (ctx) => PreferencesScreen()
         },
       ),
     );
@@ -63,11 +67,16 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
+
   final List<Map<String,dynamic>> _children = [
-    {'title': 'Home', 'widget': AllShowsScreen()},
+    {'title': 'Home', 'widget': HomeScreen()},
     {'title': 'Latest episodes', 'widget': AllShowsScreen()},
     {'title': 'Current Season', 'widget': CurrentSeasonScreen()},
     {'title': 'All Shows', 'widget': AllShowsScreen()},
+  ];
+
+  final popupMenuItems = [
+    "Settings"
   ];
 
   void onTabTapped(int index) {
@@ -82,13 +91,25 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: Text(_children[_currentIndex]['title']),
         actions: [
+
           if (_currentIndex > 1)
           IconButton(icon: Icon(Icons.search), onPressed: () {
 
           }),
-          IconButton(icon: Icon(Icons.more_vert), onPressed: () {
-            
-          })
+          PopupMenuButton(
+            onSelected: (String choice) {
+              if (choice == 'Settings') {
+                Navigator.of(context).pushNamed(PreferencesScreen.routeName);
+              }
+            },
+            itemBuilder: (ctx) {
+            return popupMenuItems.map((choice) {
+              return PopupMenuItem<String>(
+                value: choice,
+                child: Text(choice)
+                );
+            }).toList(); 
+          }),
         ],
       ),
       body: _children[_currentIndex]['widget'],

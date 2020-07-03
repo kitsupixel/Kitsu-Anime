@@ -24,7 +24,7 @@ class EpisodeDetailScreen extends StatelessWidget {
       builder: (BuildContext context) {
         // return object of type Dialog
         return AlertDialog(
-          title: new Text("Alert Dialog title"),
+          title: new Text("Downloading..."),
           content: TorrentStreamerView(url),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
@@ -41,7 +41,6 @@ class EpisodeDetailScreen extends StatelessWidget {
   }
 
   _launchURL(String url, BuildContext context) async {
-    //TorrentStreamerView(url);
     if (await canLaunch(url)) {
       await launch(url);
     } else {
@@ -103,7 +102,10 @@ class EpisodeDetailScreen extends StatelessWidget {
                             "Seeders: ${_links[i].seeds}/ Leeches: ${_links[i].leeches}")
                         : null,
                     //onTap: () => _launchURL(_links[i].link, ctx));
-                    onTap: () => _watchEpisode(_links[i].link, ctx));
+                    onTap: () =>
+                        _links[i].type == 'Magnet' && _episode.type == 'episode'
+                            ? _watchEpisode(_links[i].link, ctx)
+                            : _launchURL(_links[i].link, ctx));
               }),
     );
   }

@@ -2,10 +2,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import './database.dart';
 
 import '../models/show.dart';
 
 class Shows extends ChangeNotifier {
+
+  ShowDatabase _db;
+
   List<Show> _shows = [];
 
   List<Show> get shows {
@@ -16,37 +20,61 @@ class Shows extends ChangeNotifier {
     DateTime now = new DateTime.now();
     String currentSeason;
 
-    if (now.month <= 3) currentSeason = 'Winter';
-    else if (now.month <= 6) currentSeason = 'Spring';
-    else if (now.month <= 9) currentSeason = 'Summer';
-    else currentSeason = 'Fall';
+    if (now.month <= 3)
+      currentSeason = 'Winter';
+    else if (now.month <= 6)
+      currentSeason = 'Spring';
+    else if (now.month <= 9)
+      currentSeason = 'Summer';
+    else
+      currentSeason = 'Fall';
 
-    print(now.month.toString() + " " + currentSeason + " " + now.year.toString());
-
-    return _shows.where((element) => (element.season == currentSeason && element.year == now.year) || element.ongoing).toList();
+    return _shows
+        .where((element) =>
+            (element.season == currentSeason && element.year == now.year) ||
+            element.ongoing)
+        .toList();
   }
 
   void _fetchShows() async {
+    bool somethingChanged = false;
+    
+    // First let's get the data from the database
+    _db = ShowDatabase.get();
+    _shows = await _db.getShows();
+    if (_shows.length > 0) {
+      print("DB LENGTH:" + _shows.length.toString());
+      notifyListeners();
+    }
+
+    // Then let's see if there were changes and update the db
     final response =
         await http.get('https://kpplus.kitsupixel.pt/api/v1/shows');
 
     if (response.statusCode == 200) {
-      final jsonDecoded = json.decode(response.body);
-      for (var i = 0; i < jsonDecoded['data'].length; i++) {
-        var newShow = Show.fromJson(jsonDecoded['data'][i]);
-        var oldShow = _shows.firstWhere((element) => element.id == newShow.id, orElse: () => null);
+      final jsonShows = json.decode(response.body)['data'];
+      print("API LENGTH:" + jsonShows.length.toString());
+      for (var i = 0; i < jsonShows.length; i++) {
+        Show newShow = Show.fromJson(jsonShows[i]);
+        Show oldShow = _shows.firstWhere((element) => element.id == newShow.id,
+            orElse: () => null);
         if (oldShow != null) {
-          var index = _shows.indexOf(oldShow);
-
-          _shows[index].title = newShow.title;
-          _shows[index].synopsis = newShow.synopsis;
-          _shows[index].thumbnail = newShow.thumbnail;
-          _shows[index].season = newShow.season;
-          _shows[index].year = newShow.year;
-          _shows[index].ongoing = newShow.ongoing;
-          _shows[index].active = oldShow.active;
+          if (oldShow != newShow) {
+            int index = _shows.indexOf(oldShow);
+            _shows[index].title = newShow.title;
+            _shows[index].synopsis = newShow.synopsis;
+            _shows[index].thumbnail = newShow.thumbnail;
+            _shows[index].season = newShow.season;
+            _shows[index].year = newShow.year;
+            _shows[index].ongoing = newShow.ongoing;
+            _shows[index].active = oldShow.active;
+            somethingChanged = true;
+            await _db.updateShow(_shows[index]);
+          }
         } else {
+          somethingChanged = true;
           _shows.add(newShow);
+          await _db.insertShow(newShow);
         }
       }
     } else {
@@ -55,35 +83,39 @@ class Shows extends ChangeNotifier {
       throw Exception('Erro!');
     }
 
-    _shows = shows;
-    notifyListeners();
+    if (somethingChanged) {
+      notifyListeners();
+    }
   }
 
   Show getShow(int showId) {
-    return _shows.firstWhere((element) => element.id == showId, orElse: () => null);
+    return _shows.firstWhere((element) => element.id == showId,
+        orElse: () => null);
   }
 
   Shows() {
     _fetchShows();
   }
 
-  void toggleFavorite(int showId) {
+  void toggleFavorite(int showId) async {
     Show show = getShow(showId);
     if (show != null) {
       int index = _shows.indexOf(show);
       _shows[index].favorite = !_shows[index].favorite;
       notifyListeners();
+      await _db.updateShow(_shows[index]);
     } else {
       throw new Exception("The show $showId wasn't found!");
     }
   }
 
-  void toggleWatched(int showId) {
+  void toggleWatched(int showId) async {
     Show show = getShow(showId);
     if (show != null) {
       int index = _shows.indexOf(show);
       _shows[index].watched = !_shows[index].watched;
       notifyListeners();
+      await _db.updateShow(_shows[index]);
     } else {
       throw new Exception("The show $showId wasn't found!");
     }

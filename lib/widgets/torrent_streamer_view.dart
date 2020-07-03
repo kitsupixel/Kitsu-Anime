@@ -21,7 +21,6 @@ class _TorrentStreamerViewState extends State<TorrentStreamerView> {
   void initState() {
     super.initState();
 
-    
     _addTorrentListeners();
 
     _startDownload();
@@ -72,7 +71,7 @@ class _TorrentStreamerViewState extends State<TorrentStreamerView> {
     TorrentStreamer.addEventListener('stopped', (_) {
       resetState();
     });
-    
+
     TorrentStreamer.addEventListener('error', (_) {
       setState(() => hasError = true);
     });
@@ -84,11 +83,8 @@ class _TorrentStreamerViewState extends State<TorrentStreamerView> {
 
   Future<void> _cleanDownloads(BuildContext context) async {
     await TorrentStreamer.clean();
-    Scaffold.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Cleared torrent cache!')
-      )
-    );
+    Scaffold.of(context)
+        .showSnackBar(SnackBar(content: Text('Cleared torrent cache!')));
   }
 
   Future<void> _startDownload() async {
@@ -101,45 +97,43 @@ class _TorrentStreamerViewState extends State<TorrentStreamerView> {
       await TorrentStreamer.launchVideo();
     } else {
       showDialog(
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: new Text('Are You Sure?'),
-            content: new Text(
-              'Playing video while it is still downloading is experimental '  +
-              'and only works on limited set of apps.'
-            ),
-            actions: <Widget>[
-              new FlatButton(
-                child: new Text("Cancel"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-              new FlatButton(
-                child: new Text("Yes, Proceed"),
-                onPressed: () async {
-                  await TorrentStreamer.launchVideo();
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-        context: context
-      );
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: new Text('Are You Sure?'),
+              content: new Text(
+                  'Playing video while it is still downloading is experimental ' +
+                      'and only works on limited set of apps.'),
+              actions: <Widget>[
+                new FlatButton(
+                  child: new Text("Cancel"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                new FlatButton(
+                  child: new Text("Yes, Proceed"),
+                  onPressed: () async {
+                    await TorrentStreamer.launchVideo();
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+          context: context);
     }
   }
 
   Widget _buildTorrentStatus(BuildContext context) {
     if (hasError) {
-      return Text('Failed to download torrent!');
+      return Center(child: Text('Failed to download torrent!'));
     } else if (isDownloading) {
       String statusText = '';
       if (isFetchingMeta) {
         statusText = 'Fetching meta data';
       } else {
         statusText = 'Progress: ${progress.floor().toString()}% - ' +
-          'Speed: ${_toKBPS(speed)} KB/s';
+            'Speed: ${_toKBPS(speed)} KB/s';
       }
 
       return Column(
@@ -147,28 +141,28 @@ class _TorrentStreamerViewState extends State<TorrentStreamerView> {
           Text(statusText),
           MySpacer(),
           LinearProgressIndicator(
-            value: !isFetchingMeta ? progress / 100 : null
-          ),
+              value: !isFetchingMeta ? progress / 100 : null),
           MySpacer(),
           Row(
+            
             children: <Widget>[
               RaisedButton(
-                child: Text('Play Video'),
-                color: Colors.blue,
-                onPressed: isStreamReady ? () => _openVideo(context) : null
-              ),
+                  child: Text('Play Video'),
+                  color: Theme.of(context).primaryColor,
+                  onPressed:
+                      isStreamReady ? () => _openVideo(context) : null),
               MySpacer(),
               OutlineButton(
-                child: Text('Stop Download'),
+                child: Text('Stop Down.'),
                 onPressed: TorrentStreamer.stop,
               ),
             ],
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
           )
         ],
       );
     } else {
-      return Container(height: 0, width: 0);
+      return Center(child: CircularProgressIndicator(),);
     }
   }
 
@@ -176,15 +170,11 @@ class _TorrentStreamerViewState extends State<TorrentStreamerView> {
   Widget build(BuildContext context) {
     return Container(
       child: Column(
-        children: <Widget>[
-          MySpacer(),
-          _buildTorrentStatus(context)
-        ],
+        children: <Widget>[MySpacer(), _buildTorrentStatus(context)],
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
       ),
-      padding: EdgeInsets.all(16),
     );
   }
 

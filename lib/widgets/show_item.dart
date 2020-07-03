@@ -62,7 +62,7 @@ class ShowItem extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Consumer<Shows>(builder: (ctx, showProvider, ch) {
-                      return showProvider.getShow(id).favorite == true
+                      return showProvider.getShow(id).watched == true
                           ? Icon(Icons.remove_red_eye, color: Colors.blue[600])
                           : Container();
                     }),
