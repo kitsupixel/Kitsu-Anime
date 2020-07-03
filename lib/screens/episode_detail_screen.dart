@@ -9,7 +9,7 @@ import '../models/link.dart';
 import '../data/episodes.dart';
 import '../data/links.dart';
 
-import '../screens/torrent_streamer_view.dart';
+import '../widgets/torrent_streamer_view.dart';
 
 class EpisodeDetailScreen extends StatelessWidget {
   static const routeName = '/shows/detail/episode';
@@ -18,7 +18,7 @@ class EpisodeDetailScreen extends StatelessWidget {
 
   _watchEpisode(String url, BuildContext context) async {
     TorrentStreamer.init();
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -73,34 +73,38 @@ class EpisodeDetailScreen extends StatelessWidget {
         title: Text((_episode.type == 'episode' ? "Episode " : "Batch ") +
             _episode.number),
       ),
-      body: ListView.builder(
-          itemCount: _links.length,
-          itemBuilder: (ctx, i) {
-            return ListTile(
-                leading: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15.0),
-                      color: _links[i].quality == "1080p"
-                          ? Colors.blue
-                          : _links[i].quality == "720p"
-                              ? Colors.red
-                              : Colors.purple),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      _links[i].quality,
-                      style: TextStyle(color: Colors.white),
+      body: _links.length == 0
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ListView.builder(
+              itemCount: _links.length,
+              itemBuilder: (ctx, i) {
+                return ListTile(
+                    leading: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15.0),
+                          color: _links[i].quality == "1080p"
+                              ? Colors.blue
+                              : _links[i].quality == "720p"
+                                  ? Colors.red
+                                  : Colors.purple),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          _links[i].quality,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                title: Text(_links[i].type),
-                subtitle: (_links[i].type == 'Torrent')
-                    ? Text(
-                        "Seeders: ${_links[i].seeds}/ Leeches: ${_links[i].leeches}")
-                    : null,
-                //onTap: () => _launchURL(_links[i].link, ctx));
-                onTap: () => _watchEpisode(_links[i].link, ctx));
-          }),
+                    title: Text(_links[i].type),
+                    subtitle: (_links[i].type == 'Torrent')
+                        ? Text(
+                            "Seeders: ${_links[i].seeds}/ Leeches: ${_links[i].leeches}")
+                        : null,
+                    //onTap: () => _launchURL(_links[i].link, ctx));
+                    onTap: () => _watchEpisode(_links[i].link, ctx));
+              }),
     );
   }
 }
