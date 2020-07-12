@@ -14,11 +14,9 @@ import '../widgets/torrent_streamer_view.dart';
 class EpisodeDetailScreen extends StatelessWidget {
   static const routeName = '/shows/detail/episode';
 
-  const EpisodeDetailScreen({Key key}) : super(key: key);
+  EpisodeDetailScreen();
 
   _watchEpisode(String url, BuildContext context) async {
-    TorrentStreamer.init();
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -57,6 +55,10 @@ class EpisodeDetailScreen extends StatelessWidget {
     }
   }
 
+  _initScreen() async {
+    await TorrentStreamer.init();
+  }
+
   @override
   Widget build(BuildContext context) {
     final episodeId = ModalRoute.of(context).settings.arguments as int;
@@ -66,6 +68,8 @@ class EpisodeDetailScreen extends StatelessWidget {
 
     List<Link> _links = Provider.of<Links>(context)
         .getLinksByEpisode(_episode.showId, _episode.id);
+
+    _initScreen();
 
     return Scaffold(
       appBar: AppBar(
@@ -101,11 +105,14 @@ class EpisodeDetailScreen extends StatelessWidget {
                         ? Text(
                             "Seeders: ${_links[i].seeds}/ Leeches: ${_links[i].leeches}")
                         : null,
-                    //onTap: () => _launchURL(_links[i].link, ctx));
-                    onTap: () =>
-                        _links[i].type == 'Magnet' && _episode.type == 'episode'
-                            ? _watchEpisode(_links[i].link, ctx)
-                            : _launchURL(_links[i].link, ctx));
+                    onLongPress: () {
+                      if ((_links[i].type == 'Magnet' ||
+                              _links[i].type == 'Torrent') &&
+                          _episode.type == 'episode') {
+                        _watchEpisode(_links[i].link, ctx);
+                      }
+                    },
+                    onTap: () => _launchURL(_links[i].link, ctx));
               }),
     );
   }

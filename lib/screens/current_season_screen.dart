@@ -3,18 +3,16 @@ import 'package:provider/provider.dart';
 
 import '../data/shows.dart';
 
-import '../models/show.dart';
-
 import '../widgets/shows_list.dart';
 
 class CurrentSeasonScreen extends StatelessWidget {
   static const routeName = '/shows/ongoing';
-  
-  List<Show> _shows;
 
   @override
-  Widget build(BuildContext context) {  
-    _shows = Provider.of<Shows>(context).currentSeason;
+  Widget build(BuildContext context) {
+    final _shows = Provider.of<Shows>(context).currentSeason;
+
+    _shows.sort((a, b) => a.title.compareTo(b.title));
 
     return ShowsList(shows: _shows);
   }

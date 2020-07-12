@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:preferences/preferences.dart';
 
 import './data/shows.dart';
 import './data/episodes.dart';
@@ -12,6 +11,7 @@ import './screens/current_season_screen.dart';
 import './screens/show_detail_screen.dart';
 import './screens/episode_detail_screen.dart';
 import './screens/preferences_screen.dart';
+import './screens/latest_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -20,7 +20,7 @@ void main() {
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
-  Widget build(BuildContextcontext) {
+  Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<Shows>(
@@ -36,15 +36,14 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Kitsu\'s Anime',
         theme: ThemeData(
-          primarySwatch: Colors.deepOrange,
-          accentColor: Colors.deepOrangeAccent,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-          bottomNavigationBarTheme: BottomNavigationBarThemeData(
-            backgroundColor: Colors.deepOrange,
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.white60,
-          ) 
-        ),
+            primarySwatch: Colors.deepOrange,
+            accentColor: Colors.deepOrangeAccent,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            bottomNavigationBarTheme: BottomNavigationBarThemeData(
+              backgroundColor: Colors.deepOrange,
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white60,
+            )),
         home: Home(),
         routes: {
           ShowDetailScreen.routeName: (ctx) => ShowDetailScreen(),
@@ -68,16 +67,14 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
 
-  final List<Map<String,dynamic>> _children = [
+  final List<Map<String, dynamic>> _children = [
     {'title': 'Home', 'widget': HomeScreen()},
-    {'title': 'Latest episodes', 'widget': AllShowsScreen()},
+    {'title': 'Latest episodes', 'widget': LatestScreen()},
     {'title': 'Current Season', 'widget': CurrentSeasonScreen()},
     {'title': 'All Shows', 'widget': AllShowsScreen()},
   ];
 
-  final popupMenuItems = [
-    "Settings"
-  ];
+  final popupMenuItems = ["Settings"];
 
   void onTabTapped(int index) {
     setState(() {
@@ -91,24 +88,16 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         title: Text(_children[_currentIndex]['title']),
         actions: [
-
           if (_currentIndex > 1)
-          IconButton(icon: Icon(Icons.search), onPressed: () {
-
-          }),
-          PopupMenuButton(
-            onSelected: (String choice) {
-              if (choice == 'Settings') {
-                Navigator.of(context).pushNamed(PreferencesScreen.routeName);
-              }
-            },
-            itemBuilder: (ctx) {
+            IconButton(icon: Icon(Icons.search), onPressed: () {}),
+          PopupMenuButton(onSelected: (String choice) {
+            if (choice == 'Settings') {
+              Navigator.of(context).pushNamed(PreferencesScreen.routeName);
+            }
+          }, itemBuilder: (ctx) {
             return popupMenuItems.map((choice) {
-              return PopupMenuItem<String>(
-                value: choice,
-                child: Text(choice)
-                );
-            }).toList(); 
+              return PopupMenuItem<String>(value: choice, child: Text(choice));
+            }).toList();
           }),
         ],
       ),
@@ -130,8 +119,7 @@ class _HomeState extends State<Home> {
               title: Text('Latest'),
             ),
             BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_today),
-                title: Text('Curr. Season')),
+                icon: Icon(Icons.calendar_today), title: Text('Curr. Season')),
             BottomNavigationBarItem(
               icon: Icon(Icons.grid_on),
               title: Text('All Shows'),

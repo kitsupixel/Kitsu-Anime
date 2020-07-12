@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 import '../data/shows.dart';
@@ -73,14 +74,14 @@ class ShowDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   show.title,
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headline4,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   show.synopsis,
-                  style: Theme.of(context).textTheme.bodyText1,
+                  style: Theme.of(context).textTheme.bodyText2,
                 ),
               ),
             ]),
@@ -88,14 +89,21 @@ class ShowDetailScreen extends StatelessWidget {
           Consumer<Episodes>(
             builder: (ctx, episodeData, ch) {
               final episodes = episodeData.getEpisodesByShow(showId);
-              return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (ctx, i) {
-                    return ShowEpisodeItem(episodes[i].id);
-                  },
-                  childCount: episodes.length,
-                ),
-              );
+
+              return episodes.length == 0
+                  ? SliverToBoxAdapter(
+                      child: Padding(
+                      padding: EdgeInsets.all(30),
+                      child: Center(child: CircularProgressIndicator()),
+                    ))
+                  : SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (ctx, i) {
+                          return ShowEpisodeItem(episodes[i].id);
+                        },
+                        childCount: episodes.length,
+                      ),
+                    );
             },
           )
         ],

@@ -3,19 +3,31 @@ import 'package:provider/provider.dart';
 
 import '../data/shows.dart';
 
-import '../models/show.dart';
-
 import '../widgets/shows_list.dart';
 
 class HomeScreen extends StatelessWidget {
   static const routeName = '/';
-  
-  List<Show> _shows;
 
   @override
-  Widget build(BuildContext context) {  
-    _shows = Provider.of<Shows>(context).shows.where((element) => element.favorite).toList();
+  Widget build(BuildContext context) {
+    final _shows = Provider.of<Shows>(context)
+        .shows
+        .where((element) => element.favorite)
+        .toList();
 
-    return ShowsList(shows: _shows);
+    _shows.sort((a, b) => a.title.compareTo(b.title));
+
+    return _shows.length > 0
+        ? ShowsList(shows: _shows)
+        : Center(
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Text(
+                'No favorites added yet... ;(',
+                style: Theme.of(context).textTheme.headline4,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
   }
 }
