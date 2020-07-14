@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_torrent_streamer/flutter_torrent_streamer.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intent/intent.dart' as android_intent;
+import 'package:intent/action.dart' as android_action;
 
 import '../models/episode.dart';
 import '../models/link.dart';
@@ -9,110 +11,93 @@ import '../models/link.dart';
 import '../data/episodes.dart';
 import '../data/links.dart';
 
-import '../widgets/torrent_streamer_view.dart';
-
 class EpisodeDetailScreen extends StatelessWidget {
   static const routeName = '/shows/detail/episode';
 
   EpisodeDetailScreen();
 
-  _watchEpisode(String url, BuildContext context) async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        // return object of type Dialog
-        return AlertDialog(
-          title: new Text("Downloading..."),
-          content: TorrentStreamerView(url),
-          actions: <Widget>[
-            // usually buttons at the bottom of the dialog
-            new FlatButton(
-              child: new Text("Close"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
+  _errorSnackBar(Exception e, BuildContext context) {
+    Scaffold.of(context);
+    final scaffold = Scaffold.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text('Could open the link...' + e.toString()),
+        action: SnackBarAction(
+            label: 'CLOSE', onPressed: scaffold.hideCurrentSnackBar),
+      ),
     );
+    print(e.toString());
   }
 
   _launchURL(String url, BuildContext context) async {
-    if (await canLaunch(url)) {
-      await launch(url);
-    } else {
-      //throw 'Could not launch $url';
-      Scaffold.of(context);
-      final scaffold = Scaffold.of(context);
-      scaffold.showSnackBar(
-        SnackBar(
-          content: Text('Could open the link...'),
-          action: SnackBarAction(
-              label: 'CLOSE', onPressed: scaffold.hideCurrentSnackBar),
-        ),
-      );
+    try {
+      if (Platform.isAndroid) {
+        android_intent.Intent()
+          ..setAction(android_action.Action.ACTION_VIEW)
+          ..setData(Uri.parse(url))
+          ..startActivity();
+      } else {
+        // Se não for android vamos tentar abrir o browser para
+        if (await canLaunch(url)) {
+          await launch(url);
+        } else {
+          _errorSnackBar(Exception(""), context);
+        }
+      }
+    } catch (e) {
+      _errorSnackBar(e, context);
     }
-  }
-
-  _initScreen() async {
-    await TorrentStreamer.init();
   }
 
   @override
   Widget build(BuildContext context) {
     final episodeId = ModalRoute.of(context).settings.arguments as int;
 
-    Episode _episode =
-        Provider.of<Episodes>(context, listen: false).getEpisode(episodeId);
+    var episodeProvider = Provider.of<Episodes>(context, listen: false);
 
-    List<Link> _links = Provider.of<Links>(context)
-        .getLinksByEpisode(_episode.showId, _episode.id);
+    Episode episode = episodeProvider.getEpisode(episodeId);
 
-    _initScreen();
+    List<Link> links = Provider.of<Links>(context)
+        .getLinksByEpisode(episode.showId, episode.id);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text((_episode.type == 'episode' ? "Episode " : "Batch ") +
-            _episode.number),
+        title: Text((episode.type == 'episode' ? "Episode " : "Batch ") +
+            episode.number),
       ),
-      body: _links.length == 0
+      body: links.length == 0
           ? Center(
               child: CircularProgressIndicator(),
             )
           : ListView.builder(
-              itemCount: _links.length,
+              itemCount: links.length,
               itemBuilder: (ctx, i) {
                 return ListTile(
                     leading: Container(
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15.0),
-                          color: _links[i].quality == "1080p"
+                          color: links[i].quality == "1080p"
                               ? Colors.blue
-                              : _links[i].quality == "720p"
+                              : links[i].quality == "720p"
                                   ? Colors.red
                                   : Colors.purple),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          _links[i].quality,
+                          links[i].quality,
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
                     ),
-                    title: Text(_links[i].type),
-                    subtitle: (_links[i].type == 'Torrent')
+                    title: Text(links[i].type),
+                    subtitle: (links[i].type == 'Torrent')
                         ? Text(
-                            "Seeders: ${_links[i].seeds}/ Leeches: ${_links[i].leeches}")
+                            "Seeders: ${links[i].seeds}/ Leeches: ${links[i].leeches}")
                         : null,
-                    onLongPress: () {
-                      if ((_links[i].type == 'Magnet' ||
-                              _links[i].type == 'Torrent') &&
-                          _episode.type == 'episode') {
-                        _watchEpisode(_links[i].link, ctx);
-                      }
-                    },
-                    onTap: () => _launchURL(_links[i].link, ctx));
+                    onTap: () {
+                      _launchURL(links[i].link, ctx);
+                      episodeProvider.markAsDownloaded(episodeId);
+                    });
               }),
     );
   }
