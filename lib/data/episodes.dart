@@ -7,7 +7,6 @@ import './database.dart';
 import '../models/episode.dart';
 
 class Episodes extends ChangeNotifier {
-
   ShowDatabase _db;
 
   List<Episode> _episodes = [];
@@ -16,20 +15,33 @@ class Episodes extends ChangeNotifier {
     return [..._episodes];
   }
 
+  bool _loading = false;
+
+  bool get loading { 
+    return _loading;
+  }
+
   Episode getEpisode(int episodeId) {
-    return _episodes.firstWhere((element) => element.id == episodeId, orElse: () => null);
+    return _episodes.firstWhere((element) => element.id == episodeId,
+        orElse: () => null);
   }
 
   List<Episode> getEpisodesByShow(int showId) {
-    List<Episode> response = _episodes.where((element) => element.showId == showId).toList();
+    List<Episode> response =
+        _episodes.where((element) => element.showId == showId).toList();
     if (response.length == 0) {
       _fetchShowEpisodes(showId);
     }
     return response;
   }
 
+  void updateShowEpisodes(int showId) {
+    _fetchShowEpisodes(showId);
+  }
+
   void _fetchShowEpisodes(int showId) async {
     bool somethingChanged = false;
+    _loading = true;
 
     // First let's get the data from the database
     _db = ShowDatabase.get();
@@ -38,14 +50,21 @@ class Episodes extends ChangeNotifier {
       notifyListeners();
     }
 
-    final response =
-        await http.get('https://kpplus.kitsupixel.pt/api/v1/shows/$showId/episodes');
+    final response = await http
+        .get('https://kpplus.kitsupixel.pt/api/v1/shows/$showId/episodes');
 
     if (response.statusCode == 200) {
       final jsonEpisodes = json.decode(response.body)['data'];
       for (var i = 0; i < jsonEpisodes.length; i++) {
         var newEpisode = Episode.fromJson(jsonEpisodes[i]);
-        var oldEpisode = _episodes.firstWhere((element) => element.id == newEpisode.id, orElse: () => null);
+
+        // Alguns episodios vem com a nomenclatura de 01-5 em vez de 01.5
+        if (newEpisode.type == 'episode' && newEpisode.number.contains("-"))
+          newEpisode.number = newEpisode.number.replaceFirst("-", ".");
+
+        var oldEpisode = _episodes.firstWhere(
+            (element) => element.id == newEpisode.id,
+            orElse: () => null);
         if (oldEpisode != null) {
           if (oldEpisode != newEpisode) {
             int index = _episodes.indexOf(oldEpisode);
@@ -61,7 +80,7 @@ class Episodes extends ChangeNotifier {
           somethingChanged = true;
           _episodes.add(newEpisode);
           await _db.insertEpisode(newEpisode);
-        } 
+        }
       }
     } else {
       // If the server did not return a 200 OK response,
@@ -70,6 +89,7 @@ class Episodes extends ChangeNotifier {
     }
 
     if (somethingChanged) {
+      _loading = false;
       notifyListeners();
     }
   }
@@ -83,6 +103,20 @@ class Episodes extends ChangeNotifier {
       _episodes[index].downloaded = !_episodes[index].downloaded;
       notifyListeners();
       await _db.updateEpisode(_episodes[index]);
+    } else {
+      throw new Exception("The episode $episodeId wasn't found!");
+    }
+  }
+
+  void markAsDownloaded(int episodeId) async {
+    Episode episode = getEpisode(episodeId);
+    if (episode != null) {
+      int index = _episodes.indexOf(episode);
+      if (_episodes[index].downloaded != true) {
+        _episodes[index].downloaded = true;
+        notifyListeners();
+        await _db.updateEpisode(_episodes[index]);
+      }
     } else {
       throw new Exception("The episode $episodeId wasn't found!");
     }
