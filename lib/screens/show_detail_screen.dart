@@ -42,31 +42,42 @@ class ShowDetailScreen extends StatelessWidget {
                   child: Icon(Icons.error, color: Theme.of(context).errorColor),
                 ),
               ),
+              title: Padding(
+                padding: const EdgeInsets.only(right: 8.0, top: 32.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Consumer<Shows>(builder: (ctx, showProvider, ch) {
+                      return FloatingActionButton(
+                        mini: true,
+                        tooltip: "Watched",
+                        backgroundColor:
+                            showProvider.getShow(showId).watched == true
+                                ? Colors.blue[600]
+                                : Colors.grey,
+                        child: Icon(Icons.remove_red_eye),
+                        onPressed: () => showProvider.toggleWatched(showId),
+                      );
+                    }),
+                    SizedBox(
+                      width: 8,
+                    ),
+                    Consumer<Shows>(builder: (ctx, showProvider, _) {
+                      return FloatingActionButton(
+                        mini: true,
+                        tooltip: "Favorite",
+                        backgroundColor:
+                            showProvider.getShow(showId).favorite == true
+                                ? Theme.of(context).primaryColor
+                                : Colors.grey,
+                        child: Icon(Icons.star),
+                        onPressed: () => showProvider.toggleFavorite(showId),
+                      );
+                    }),
+                  ],
+                ),
+              ),
             ),
-            actions: [
-              Consumer<Shows>(builder: (ctx, showProvider, ch) {
-                return IconButton(
-                  icon: Icon(
-                    Icons.remove_red_eye,
-                    color: showProvider.getShow(showId).watched == true
-                        ? Colors.blue[600]
-                        : Colors.white,
-                  ),
-                  onPressed: () => showProvider.toggleWatched(showId),
-                );
-              }),
-              Consumer<Shows>(builder: (ctx, showProvider, ch) {
-                return IconButton(
-                  icon: Icon(
-                    Icons.star,
-                    color: showProvider.getShow(showId).favorite == true
-                        ? Colors.red[600]
-                        : Colors.white,
-                  ),
-                  onPressed: () => showProvider.toggleFavorite(showId),
-                );
-              }),
-            ],
           ),
           SliverList(
             delegate: SliverChildListDelegate([
