@@ -15,6 +15,7 @@ class ShowEpisodeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final Episode _episode =
         Provider.of<Episodes>(context).getEpisode(_episodeId);
 
@@ -26,7 +27,7 @@ class ShowEpisodeItem extends StatelessWidget {
       title: Text((_episode.type == 'episode' ? "Episode " : "Batch ") +
           _episode.number),
       subtitle: Text(
-          DateFormat.yMd(Intl.getCurrentLocale()).format(_episode.releasedOn)),
+          DateFormat('yyyy-MM-dd').format(_episode.releasedOn)),
       trailing: Container(
         width: 100,
         child: Row(
