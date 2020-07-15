@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import './data/shows.dart';
 import './data/episodes.dart';
 import './data/links.dart';
+import './data/filters.dart';
 
 import './screens/home_screen.dart';
 import './screens/all_shows_screen.dart';
@@ -31,6 +32,9 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider<Links>(
           create: (_) => Links(),
+        ),
+        ChangeNotifierProvider<Filters>(
+          create: (_) => Filters(),
         ),
       ],
       child: MaterialApp(
@@ -66,6 +70,11 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
+  bool isSearching = false;
+
+  Filters filterProvider;
+
+  final searchController = TextEditingController();
 
   final List<Map<String, dynamic>> _children = [
     {'title': 'Home', 'widget': HomeScreen()},
@@ -82,14 +91,55 @@ class _HomeState extends State<Home> {
     });
   }
 
+  void _updateSearch() {
+    if (searchController.text.isNotEmpty)
+      filterProvider.updateSearch(searchController.text);
+    else
+      filterProvider.clearSearch();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Start listening to changes.
+    searchController.addListener(_updateSearch);
+  }
+
   @override
   Widget build(BuildContext context) {
+    filterProvider = Provider.of<Filters>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(_children[_currentIndex]['title']),
+        title: !isSearching
+            ? Text(_children[_currentIndex]['title'])
+            : TextField(
+                autofocus: true,
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: "Search...",
+                  hintStyle: TextStyle(color: Colors.white),
+                  icon: Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
+                ),
+                style: TextStyle(color: Colors.white),
+              ),
         actions: [
-          if (_currentIndex > 1)
-            IconButton(icon: Icon(Icons.search), onPressed: () {}),
+          if (_currentIndex == 0 || _currentIndex > 1)
+            IconButton(
+                icon: Icon(!isSearching ? Icons.search : Icons.close),
+                onPressed: () {
+                  setState(() {
+                    isSearching = !isSearching;
+                    if (!isSearching) {
+                      searchController.text = '';
+                      filterProvider.clearSearch();
+                    }
+                  });
+                }),
           PopupMenuButton(onSelected: (String choice) {
             if (choice == 'Settings') {
               Navigator.of(context).pushNamed(PreferencesScreen.routeName);
@@ -126,5 +176,13 @@ class _HomeState extends State<Home> {
             ),
           ]),
     );
+  }
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    searchController.dispose();
+    super.dispose();
   }
 }
