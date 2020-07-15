@@ -17,12 +17,6 @@ class ShowDetailScreen extends StatelessWidget {
   int _sortEpisodes(Episode a, Episode b) {
     int comparator = 0;
 
-    /*
-    * Regras para o sorting
-    * Batches para o fundo da lista
-    * Como o
-    */
-
     if (b.type == 'batch' && a.type == 'episode')
       comparator = -1;
     else if (b.type == 'episode' && a.type == 'batch')
@@ -35,13 +29,6 @@ class ShowDetailScreen extends StatelessWidget {
         if (b.number.contains("-")) b.number = b.number.replaceFirst("-", ".");
         comparator = double.parse(b.number).compareTo(double.parse(a.number));
       }
-
-      // if (a.number.length > b.number.length)
-      //   comparator = -1;
-      // else if (a.number.length < b.number.length)
-      //   comparator = 1;
-      // else
-      //   comparator = b.number.compareTo(a.number);
     }
 
     return comparator;
@@ -105,7 +92,7 @@ class ShowDetailScreen extends StatelessWidget {
                         tooltip: "Favorite",
                         backgroundColor:
                             showProvider.getShow(showId).favorite == true
-                                ? Theme.of(context).primaryColor
+                                ? Theme.of(context).accentColor
                                 : Colors.grey,
                         child: Icon(Icons.star),
                         onPressed: () => showProvider.toggleFavorite(showId),
