@@ -140,15 +140,15 @@ class _HomeState extends State<Home> {
                     }
                   });
                 }),
-          PopupMenuButton(onSelected: (String choice) {
-            if (choice == 'Settings') {
-              Navigator.of(context).pushNamed(PreferencesScreen.routeName);
-            }
-          }, itemBuilder: (ctx) {
-            return popupMenuItems.map((choice) {
-              return PopupMenuItem<String>(value: choice, child: Text(choice));
-            }).toList();
-          }),
+          // PopupMenuButton(onSelected: (String choice) {
+          //   if (choice == 'Settings') {
+          //     Navigator.of(context).pushNamed(PreferencesScreen.routeName);
+          //   }
+          // }, itemBuilder: (ctx) {
+          //   return popupMenuItems.map((choice) {
+          //     return PopupMenuItem<String>(value: choice, child: Text(choice));
+          //   }).toList();
+          // }),
         ],
       ),
       body: _children[_currentIndex]['widget'],

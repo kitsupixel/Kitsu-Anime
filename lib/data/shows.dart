@@ -50,7 +50,6 @@ class Shows extends ChangeNotifier {
     _db = ShowDatabase.get();
     _shows = await _db.getShows();
     if (_shows.length > 0) {
-      print("DB LENGTH:" + _shows.length.toString());
       notifyListeners();
     }
 
@@ -60,7 +59,6 @@ class Shows extends ChangeNotifier {
 
     if (response.statusCode == 200) {
       final jsonShows = json.decode(response.body)['data'];
-      print("API LENGTH:" + jsonShows.length.toString());
       for (var i = 0; i < jsonShows.length; i++) {
         Show newShow = Show.fromJson(jsonShows[i]);
         Show oldShow = _shows.firstWhere((element) => element.id == newShow.id,

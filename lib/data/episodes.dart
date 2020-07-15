@@ -131,16 +131,19 @@ class Episodes extends ChangeNotifier {
         var oldEpisode = _latestEpisodes.firstWhere(
             (element) => element.id == newEpisode.id,
             orElse: () => null);
+        if (oldEpisode == null) {
+          oldEpisode = await _db.getEpisode(newEpisode.id);
+        }
+
         if (oldEpisode != null) {
           if (oldEpisode != newEpisode) {
-            int index = _latestEpisodes.indexOf(oldEpisode);
-            _latestEpisodes[index].showId = newEpisode.showId;
-            _latestEpisodes[index].number = newEpisode.number;
-            _latestEpisodes[index].type = newEpisode.type;
-            _latestEpisodes[index].releasedOn = newEpisode.releasedOn;
-            _latestEpisodes[index].createdAt = newEpisode.createdAt;
+            oldEpisode.showId = newEpisode.showId;
+            oldEpisode.number = newEpisode.number;
+            oldEpisode.type = newEpisode.type;
+            oldEpisode.releasedOn = newEpisode.releasedOn;
+            oldEpisode.createdAt = newEpisode.createdAt;
             somethingChanged = true;
-            await _db.updateEpisode(_latestEpisodes[index]);
+            await _db.updateEpisode(oldEpisode);
           }
         } else {
 

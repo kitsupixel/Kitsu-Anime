@@ -109,7 +109,7 @@ class ShowDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   show.title,
-                  style: Theme.of(context).textTheme.headline4,
+                  style: Theme.of(context).textTheme.headline4.copyWith(color: Colors.black),
                 ),
               ),
               Padding(

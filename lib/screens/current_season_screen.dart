@@ -29,19 +29,28 @@ class CurrentSeasonScreen extends StatelessWidget {
 
     shows.sort((a, b) => a.title.compareTo(b.title));
 
-    return shows.length > 0
-        ? ShowsList(shows: shows)
-        : Center(
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Text(
-                searchResult != 0
-                    ? 'Something went wrong...\nPlease check your internet connection.'
-                    : 'Oh no!\nNo results found!',
-                style: Theme.of(context).textTheme.headline4,
-                textAlign: TextAlign.center,
+    return Stack(children: [
+      shows.length > 0
+          ? ShowsList(shows: shows)
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Text(
+                  searchResult != 0
+                      ? 'Something went wrong...\nPlease check your internet connection.'
+                      : 'Oh no!\nNo results found!',
+                  style: Theme.of(context).textTheme.headline4,
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
-          );
+      Consumer<Shows>(
+        builder: (ctx, data, ch) {
+          bool isLoading = data.loading;
+
+          return isLoading ? LinearProgressIndicator() : SizedBox();
+        },
+      )
+    ]);
   }
 }
