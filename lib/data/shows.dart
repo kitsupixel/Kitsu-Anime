@@ -36,8 +36,15 @@ class Shows extends ChangeNotifier {
         .toList();
   }
 
+  bool _loading = false;
+
+  bool get loading { 
+    return _loading;
+  }
+
   void _fetchShows() async {
     bool somethingChanged = false;
+    _loading = true;
     
     // First let's get the data from the database
     _db = ShowDatabase.get();
@@ -83,8 +90,43 @@ class Shows extends ChangeNotifier {
       throw Exception('Erro!');
     }
 
+    _loading = false;
     if (somethingChanged) {
       notifyListeners();
+    }
+  }
+
+  static void updateShow(int showId) async {
+    
+    // First let's get the data from the database
+    final db = ShowDatabase.get();
+    Show oldShow = await db.getShow(showId);
+
+    // Then let's see if there were changes and update the db
+    final response =
+        await http.get('https://kpplus.kitsupixel.pt/api/v1/shows/$showId');
+
+    if (response.statusCode == 200) {
+      final jsonShow = json.decode(response.body)['data'];
+        Show newShow = Show.fromJson(jsonShow);
+        if (oldShow != null) {
+          if (oldShow != newShow) {
+            oldShow.title = newShow.title;
+            oldShow.synopsis = newShow.synopsis;
+            oldShow.thumbnail = newShow.thumbnail;
+            oldShow.season = newShow.season;
+            oldShow.year = newShow.year;
+            oldShow.ongoing = newShow.ongoing;
+            oldShow.active = oldShow.active;
+            await db.updateShow(oldShow);
+          }
+        } else {
+          await db.insertShow(newShow);
+        }
+    } else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      throw Exception('Erro!');
     }
   }
 

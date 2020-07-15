@@ -109,6 +109,20 @@ class ShowDatabase {
     return [];
   }
 
+  Future<List<Episode>> getLatestEpisodes() async {
+    var db = await _getDb();
+    List<Map> maps = await db.query(Episode.tableName, 
+      where: "type = ?",
+      whereArgs: ['episode'],
+      orderBy: "released_on DESC, created_at DESC",
+      limit: 15
+    );
+    if (maps.length > 0) {
+      return maps.map((e) => Episode.fromMap(e)).toList();
+    }
+    return [];
+  }
+
   Future<Episode> insertEpisode(Episode obj) async {
     var db = await _getDb();
     obj.id = await db.insert(Episode.tableName, obj.toMap());
