@@ -27,7 +27,10 @@ class ShowDetailScreen extends StatelessWidget {
       } else {
         if (a.number.contains("-")) a.number = a.number.replaceFirst("-", ".");
         if (b.number.contains("-")) b.number = b.number.replaceFirst("-", ".");
-        comparator = double.parse(b.number).compareTo(double.parse(a.number));
+        double aNumber = double.tryParse(a.number);
+        double bNumber = double.tryParse(b.number);
+        if (aNumber != null && bNumber != null) comparator = bNumber.compareTo(aNumber);
+        else comparator = b.number.compareTo(a.number);
       }
     }
 
