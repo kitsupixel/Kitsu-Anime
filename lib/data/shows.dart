@@ -61,20 +61,18 @@ class Shows extends ChangeNotifier {
       final jsonShows = json.decode(response.body)['data'];
       for (var i = 0; i < jsonShows.length; i++) {
         Show newShow = Show.fromJson(jsonShows[i]);
-        Show oldShow = _shows.firstWhere((element) => element.id == newShow.id,
-            orElse: () => null);
+        Show oldShow = await _db.getShow(newShow.id);
         if (oldShow != null) {
           if (oldShow != newShow) {
-            int index = _shows.indexOf(oldShow);
-            _shows[index].title = newShow.title;
-            _shows[index].synopsis = newShow.synopsis;
-            _shows[index].thumbnail = newShow.thumbnail;
-            _shows[index].season = newShow.season;
-            _shows[index].year = newShow.year;
-            _shows[index].ongoing = newShow.ongoing;
-            _shows[index].active = oldShow.active;
+            oldShow.title = newShow.title;
+            oldShow.synopsis = newShow.synopsis;
+            oldShow.thumbnail = newShow.thumbnail;
+            oldShow.season = newShow.season;
+            oldShow.year = newShow.year;
+            oldShow.ongoing = newShow.ongoing;
+            oldShow.active = oldShow.active;
             somethingChanged = true;
-            await _db.updateShow(_shows[index]);
+            await _db.updateShow(oldShow);
           }
         } else {
           somethingChanged = true;
