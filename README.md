@@ -1,16 +1,10 @@
-# kitsu_anime
+# Kitsu's Anime
 
-A new Flutter project.
+An anime app that helps to manage what have you already seen and what you have yet to see. 
 
-## Getting Started
+## Feel to download and use
 
-This project is a starting point for a Flutter application.
+Made this project to first help me manage the content that I need help managing, like what episode I last saw of One Piece, and second to try out [Flutter SDK](https://flutter.dev/)
+All animes, and episode information are from [HorribleSubs](https://horriblesubs.info/), they are, in my opinion, very good at subbing and if you can, help them out.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+The released app is on the root of this repository.
