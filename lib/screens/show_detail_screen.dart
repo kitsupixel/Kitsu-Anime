@@ -29,8 +29,10 @@ class ShowDetailScreen extends StatelessWidget {
         if (b.number.contains("-")) b.number = b.number.replaceFirst("-", ".");
         double aNumber = double.tryParse(a.number);
         double bNumber = double.tryParse(b.number);
-        if (aNumber != null && bNumber != null) comparator = bNumber.compareTo(aNumber);
-        else comparator = b.number.compareTo(a.number);
+        if (aNumber != null && bNumber != null)
+          comparator = bNumber.compareTo(aNumber);
+        else
+          comparator = b.number.compareTo(a.number);
       }
     }
 
@@ -67,43 +69,48 @@ class ShowDetailScreen extends StatelessWidget {
                   child: Icon(Icons.error, color: Theme.of(context).errorColor),
                 ),
               ),
-              title: Padding(
-                padding: const EdgeInsets.only(right: 8.0, top: 32.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Consumer<Shows>(builder: (ctx, showProvider, ch) {
-                      return FloatingActionButton(
-                        heroTag: "btnWatched",
-                        mini: true,
-                        tooltip: "Watched",
-                        backgroundColor:
-                            showProvider.getShow(showId).watched == true
-                                ? Colors.blue[600]
-                                : Colors.grey,
-                        child: Icon(Icons.remove_red_eye),
-                        onPressed: () => showProvider.toggleWatched(showId),
-                      );
-                    }),
-                    SizedBox(
-                      width: 8,
-                    ),
-                    Consumer<Shows>(builder: (ctx, showProvider, _) {
-                      return FloatingActionButton(
-                        heroTag: "btnFavorite",
-                        mini: true,
-                        tooltip: "Favorite",
-                        backgroundColor:
-                            showProvider.getShow(showId).favorite == true
-                                ? Theme.of(context).accentColor
-                                : Colors.grey,
-                        child: Icon(Icons.star),
-                        onPressed: () => showProvider.toggleFavorite(showId),
-                      );
-                    }),
-                  ],
+              title: Stack(children: [
+                Container(
+                  alignment: Alignment.bottomRight,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Consumer<Shows>(builder: (ctx, showProvider, ch) {
+                        return FloatingActionButton(
+                          heroTag: "btnWatched",
+                          mini: true,
+                          tooltip: "Watched",
+                          backgroundColor:
+                              showProvider.getShow(showId).watched == true
+                                  ? Colors.blue[600]
+                                  : Colors.grey,
+                          child: Icon(Icons.remove_red_eye),
+                          onPressed: () => showProvider.toggleWatched(showId),
+                        );
+                      }),
+                      SizedBox(
+                        width: 4,
+                      ),
+                      Consumer<Shows>(builder: (ctx, showProvider, _) {
+                        return FloatingActionButton(
+                          heroTag: "btnFavorite",
+                          mini: true,
+                          tooltip: "Favorite",
+                          backgroundColor:
+                              showProvider.getShow(showId).favorite == true
+                                  ? Theme.of(context).accentColor
+                                  : Colors.grey,
+                          child: Icon(Icons.star),
+                          onPressed: () => showProvider.toggleFavorite(showId),
+                        );
+                      }),
+                      SizedBox(
+                        width: 4,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ]),
             ),
           ),
           SliverList(
@@ -112,7 +119,10 @@ class ShowDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   show.title,
-                  style: Theme.of(context).textTheme.headline4.copyWith(color: Colors.black),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline4
+                      .copyWith(color: Colors.black),
                 ),
               ),
               Padding(
