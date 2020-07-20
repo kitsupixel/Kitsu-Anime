@@ -27,15 +27,10 @@ dependencies:
   # Provider
   # A wrapper around InheritedWidget to make them easier to use and more reusable.
   provider: ^4.1.3
-  
-  # meet_network_image 
-  # https://pub.dev/packages/meet_network_image#-readme-tab-
-  meet_network_image: ^0.1.2
 
   # Cached network image
   # A flutter library to show images from the internet and keep them in the cache directory.
   cached_network_image: ^2.2.0+1
-
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
