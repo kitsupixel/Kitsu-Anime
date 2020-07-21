@@ -7,7 +7,6 @@ import './database.dart';
 import '../models/show.dart';
 
 class Shows extends ChangeNotifier {
-
   ShowDatabase _db;
 
   List<Show> _shows = [];
@@ -38,16 +37,17 @@ class Shows extends ChangeNotifier {
 
   bool _loading = false;
 
-  bool get loading { 
+  bool get loading {
     return _loading;
   }
 
   void _fetchShows() async {
-    bool somethingChanged = false;
     _loading = true;
-    
+    notifyListeners();
+
     // First let's get the data from the database
     _db = ShowDatabase.get();
+
     _shows = await _db.getShows();
     if (_shows.length > 0) {
       notifyListeners();
@@ -57,73 +57,159 @@ class Shows extends ChangeNotifier {
     final response =
         await http.get('https://kpplus.kitsupixel.pt/api/v1/shows');
 
-    if (response.statusCode == 200) {
-      final jsonShows = json.decode(response.body)['data'];
-      for (var i = 0; i < jsonShows.length; i++) {
-        Show newShow = Show.fromJson(jsonShows[i]);
-        Show oldShow = await _db.getShow(newShow.id);
-        if (oldShow != null) {
-          if (oldShow != newShow) {
-            oldShow.title = newShow.title;
-            oldShow.synopsis = newShow.synopsis;
-            oldShow.thumbnail = newShow.thumbnail;
-            oldShow.season = newShow.season;
-            oldShow.year = newShow.year;
-            oldShow.ongoing = newShow.ongoing;
-            oldShow.active = oldShow.active;
-            somethingChanged = true;
-            await _db.updateShow(oldShow);
+    await _db.db.transaction((txn) async {
+      var batch = txn.batch();
+
+      if (response.statusCode == 200) {
+        final jsonShows = json.decode(response.body)['data'];
+        for (var i = 0; i < jsonShows.length; i++) {
+          if (i > 0 && i % 100 == 0) {
+            await batch.commit(continueOnError: true);
+            batch = txn.batch();
           }
-        } else {
-          somethingChanged = true;
-          _shows.add(newShow);
-          await _db.insertShow(newShow);
+
+          Show newShow = Show.fromJson(jsonShows[i]);
+          _db.getShow(newShow.id).then((oldShow) {
+            if (oldShow != null) {
+              if (oldShow != newShow) {
+                bool somethingChanged = false;
+                if (oldShow.title != newShow.title) {
+                  oldShow.title = newShow.title;
+                  somethingChanged = true;
+                }
+
+                if (oldShow.synopsis != newShow.synopsis) {
+                  oldShow.synopsis = newShow.synopsis;
+                  somethingChanged = true;
+                }
+
+                if (oldShow.thumbnail != newShow.thumbnail) {
+                  oldShow.thumbnail = newShow.thumbnail;
+                  somethingChanged = true;
+                }
+
+                if (oldShow.season != newShow.season) {
+                  oldShow.season = newShow.season;
+                  somethingChanged = true;
+                }
+
+                if (oldShow.year != newShow.year) {
+                  oldShow.year = newShow.year;
+                  somethingChanged = true;
+                }
+
+                if (oldShow.ongoing != newShow.ongoing) {
+                  oldShow.ongoing = newShow.ongoing;
+                  somethingChanged = true;
+                }
+
+                if (oldShow.active != newShow.active) {
+                  oldShow.active = newShow.active;
+                  somethingChanged = true;
+                }
+
+                if (oldShow.title != newShow.title) {
+                  oldShow.title = newShow.title;
+                  somethingChanged = true;
+                }
+
+                if (somethingChanged) {
+                  _db.updateShow(oldShow);
+                  print("Updated show: ${oldShow.title}");
+                  notifyListeners();
+                }
+              }
+            } else {
+              _shows.add(newShow);
+              _db.insertShow(newShow);
+              print("Inserted show: ${newShow.title}");
+              notifyListeners();
+            }
+          });
         }
+
+        await batch.commit(continueOnError: true);
+      } else {
+        // If the server did not return a 200 OK response,
+        // then throw an exception.
+        throw Exception('Erro!');
       }
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Erro!');
-    }
+    });
 
     _loading = false;
-    if (somethingChanged) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   static void updateShow(int showId) async {
-    
-    // First let's get the data from the database
-    final db = ShowDatabase.get();
-    Show oldShow = await db.getShow(showId);
-
     // Then let's see if there were changes and update the db
     final response =
         await http.get('https://kpplus.kitsupixel.pt/api/v1/shows/$showId');
 
-    if (response.statusCode == 200) {
-      final jsonShow = json.decode(response.body)['data'];
+    // First let's get the data from the database
+    final db = ShowDatabase.get();
+    db.getShow(showId).then((oldShow) {
+      if (response.statusCode == 200) {
+        final jsonShow = json.decode(response.body)['data'];
         Show newShow = Show.fromJson(jsonShow);
         if (oldShow != null) {
           if (oldShow != newShow) {
-            oldShow.title = newShow.title;
-            oldShow.synopsis = newShow.synopsis;
-            oldShow.thumbnail = newShow.thumbnail;
-            oldShow.season = newShow.season;
-            oldShow.year = newShow.year;
-            oldShow.ongoing = newShow.ongoing;
-            oldShow.active = oldShow.active;
-            await db.updateShow(oldShow);
+            bool somethingChanged = false;
+
+            if (oldShow.title != newShow.title) {
+              oldShow.title = newShow.title;
+              somethingChanged = true;
+            }
+
+            if (oldShow.synopsis != newShow.synopsis) {
+              oldShow.synopsis = newShow.synopsis;
+              somethingChanged = true;
+            }
+
+            if (oldShow.thumbnail != newShow.thumbnail) {
+              oldShow.thumbnail = newShow.thumbnail;
+              somethingChanged = true;
+            }
+
+            if (oldShow.season != newShow.season) {
+              oldShow.season = newShow.season;
+              somethingChanged = true;
+            }
+
+            if (oldShow.year != newShow.year) {
+              oldShow.year = newShow.year;
+              somethingChanged = true;
+            }
+
+            if (oldShow.ongoing != newShow.ongoing) {
+              oldShow.ongoing = newShow.ongoing;
+              somethingChanged = true;
+            }
+
+            if (oldShow.active != newShow.active) {
+              oldShow.active = newShow.active;
+              somethingChanged = true;
+            }
+
+            if (oldShow.title != newShow.title) {
+              oldShow.title = newShow.title;
+              somethingChanged = true;
+            }
+
+            if (somethingChanged) {
+              db.updateShow(oldShow);
+              print("Updated show: ${oldShow.title}");
+            }
           }
         } else {
-          await db.insertShow(newShow);
+          db.insertShow(newShow);
+          print("Inserted show: ${newShow.title}");
         }
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Erro!');
-    }
+      } else {
+        // If the server did not return a 200 OK response,
+        // then throw an exception.
+        throw Exception('Erro!');
+      }
+    });
   }
 
   Show getShow(int showId) {

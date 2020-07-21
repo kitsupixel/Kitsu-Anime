@@ -21,7 +21,7 @@ class Episodes extends ChangeNotifier {
 
   bool _loading = false;
 
-  bool get loading { 
+  bool get loading {
     return _loading;
   }
 
@@ -51,7 +51,6 @@ class Episodes extends ChangeNotifier {
   }
 
   void _fetchShowEpisodes(int showId) async {
-    bool somethingChanged = false;
     _loading = true;
 
     // First let's get the data from the database
@@ -66,33 +65,66 @@ class Episodes extends ChangeNotifier {
 
     if (response.statusCode == 200) {
       final jsonEpisodes = json.decode(response.body)['data'];
-      for (var i = 0; i < jsonEpisodes.length; i++) {
-        var newEpisode = Episode.fromJson(jsonEpisodes[i]);
 
-        // Alguns episodios vem com a nomenclatura de 01-5 em vez de 01.5
-        if (newEpisode.type == 'episode' && newEpisode.number.contains("-"))
-          newEpisode.number = newEpisode.number.replaceFirst("-", ".");
+      await _db.db.transaction((txn) async {
+        var batch = txn.batch();
 
-        var oldEpisode = _episodes.firstWhere(
-            (element) => element.id == newEpisode.id,
-            orElse: () => null);
-        if (oldEpisode != null) {
-          if (oldEpisode != newEpisode) {
-            int index = _episodes.indexOf(oldEpisode);
-            _episodes[index].showId = newEpisode.showId;
-            _episodes[index].number = newEpisode.number;
-            _episodes[index].type = newEpisode.type;
-            _episodes[index].releasedOn = newEpisode.releasedOn;
-            _episodes[index].createdAt = newEpisode.createdAt;
-            somethingChanged = true;
-            await _db.updateEpisode(_episodes[index]);
+        for (var i = 0; i < jsonEpisodes.length; i++) {
+          var newEpisode = Episode.fromJson(jsonEpisodes[i]);
+
+          if (i > 0 && i % 100 == 0) {
+            await batch.commit();
+            batch = txn.batch();
           }
-        } else {
-          somethingChanged = true;
-          _episodes.add(newEpisode);
-          await _db.insertEpisode(newEpisode);
+          // Alguns episodios vem com a nomenclatura de 01-5 em vez de 01.5
+          if (newEpisode.type == 'episode' && newEpisode.number.contains("-"))
+            newEpisode.number = newEpisode.number.replaceFirst("-", ".");
+
+          _db.getEpisode(newEpisode.id).then((oldEpisode) {
+            if (oldEpisode != null) {
+              if (oldEpisode != newEpisode) {
+                bool somethingChanged = false;
+                if (oldEpisode.showId != newEpisode.showId) {
+                  oldEpisode.showId = newEpisode.showId;
+                  somethingChanged = true;
+                }
+
+                if (oldEpisode.number != newEpisode.number) {
+                  oldEpisode.number = newEpisode.number;
+                  somethingChanged = true;
+                }
+
+                if (oldEpisode.type != newEpisode.type) {
+                  oldEpisode.type = newEpisode.type;
+                  somethingChanged = true;
+                }
+
+                if (oldEpisode.releasedOn != newEpisode.releasedOn) {
+                  oldEpisode.releasedOn = newEpisode.releasedOn;
+                  somethingChanged = true;
+                }
+
+                if (oldEpisode.createdAt != newEpisode.createdAt) {
+                  oldEpisode.createdAt = newEpisode.createdAt;
+                  somethingChanged = true;
+                }
+                if (somethingChanged) {
+                  _db.updateEpisode(oldEpisode);
+                  print("Updated episode: ${newEpisode.number}");
+                  notifyListeners();
+                }
+              }
+            } else {
+              _episodes.add(newEpisode);
+              _db.insertEpisode(newEpisode);
+              print("Inserted episode: ${newEpisode.number}");
+              notifyListeners();
+            }
+          });
         }
-      }
+
+        await batch.commit();
+      });
     } else {
       // If the server did not return a 200 OK response,
       // then throw an exception.
@@ -100,13 +132,10 @@ class Episodes extends ChangeNotifier {
     }
 
     _loading = false;
-    if (somethingChanged) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   void _fetchLatestEpisodes() async {
-    bool somethingChanged = false;
     _loading = true;
 
     // First let's get the data from the database
@@ -116,48 +145,86 @@ class Episodes extends ChangeNotifier {
       notifyListeners();
     }
 
-    final response = await http
-        .get('https://kpplus.kitsupixel.pt/api/v1/shows/latest');
+    final response =
+        await http.get('https://kpplus.kitsupixel.pt/api/v1/shows/latest');
 
     if (response.statusCode == 200) {
       final jsonEpisodes = json.decode(response.body)['data'];
-      for (var i = 0; i < jsonEpisodes.length; i++) {
-        var newEpisode = Episode.fromJson(jsonEpisodes[i]);
 
-        // Alguns episodios vem com a nomenclatura de 01-5 em vez de 01.5
-        if (newEpisode.type == 'episode' && newEpisode.number.contains("-"))
-          newEpisode.number = newEpisode.number.replaceFirst("-", ".");
+      await _db.db.transaction((txn) async {
+        var batch = txn.batch();
 
-        var oldEpisode = _latestEpisodes.firstWhere(
-            (element) => element.id == newEpisode.id,
-            orElse: () => null);
-        if (oldEpisode == null) {
-          oldEpisode = await _db.getEpisode(newEpisode.id);
-        }
+        for (var i = 0; i < jsonEpisodes.length; i++) {
+          var newEpisode = Episode.fromJson(jsonEpisodes[i]);
 
-        if (oldEpisode != null) {
-          if (oldEpisode != newEpisode) {
-            oldEpisode.showId = newEpisode.showId;
-            oldEpisode.number = newEpisode.number;
-            oldEpisode.type = newEpisode.type;
-            oldEpisode.releasedOn = newEpisode.releasedOn;
-            oldEpisode.createdAt = newEpisode.createdAt;
-            somethingChanged = true;
-            await _db.updateEpisode(oldEpisode);
-          }
-        } else {
-
-          // Vamos verificar se existe o show deste novo episodio
-          Show show = await _db.getShow(newEpisode.showId);
-          if (show == null) {
-            Shows.updateShow(newEpisode.showId);
+          if (i > 0 && i % 100 == 0) {
+            await batch.commit(continueOnError: true);
+            batch = txn.batch();
           }
 
-          somethingChanged = true;
-          _latestEpisodes.add(newEpisode);
-          await _db.insertEpisode(newEpisode);
+          // Alguns episodios vem com a nomenclatura de 01-5 em vez de 01.5
+          if (newEpisode.type == 'episode' && newEpisode.number.contains("-"))
+            newEpisode.number = newEpisode.number.replaceFirst("-", ".");
+
+          var oldEpisode = _latestEpisodes.firstWhere(
+              (element) => element.id == newEpisode.id,
+              orElse: () => null);
+          if (oldEpisode == null) {
+            _db.getEpisode(newEpisode.id).then((oldEpisode) {
+              if (oldEpisode != null) {
+                if (oldEpisode != newEpisode) {
+                  bool somethingChanged = false;
+                  if (oldEpisode.showId != newEpisode.showId) {
+                    oldEpisode.showId = newEpisode.showId;
+                    somethingChanged = true;
+                  }
+
+                  if (oldEpisode.number != newEpisode.number) {
+                    oldEpisode.number = newEpisode.number;
+                    somethingChanged = true;
+                  }
+
+                  if (oldEpisode.type != newEpisode.type) {
+                    oldEpisode.type = newEpisode.type;
+                    somethingChanged = true;
+                  }
+
+                  if (oldEpisode.releasedOn != newEpisode.releasedOn) {
+                    oldEpisode.releasedOn = newEpisode.releasedOn;
+                    somethingChanged = true;
+                  }
+
+                  if (oldEpisode.createdAt != newEpisode.createdAt) {
+                    oldEpisode.createdAt = newEpisode.createdAt;
+                    somethingChanged = true;
+                  }
+
+                  if (somethingChanged) {
+                    _db.updateEpisode(oldEpisode);
+                    notifyListeners();
+                    print("Updated episode: ${oldEpisode.number}");
+                  }
+                }
+              } else {
+                // Vamos verificar se existe o show deste novo episodio
+                _db.getShow(newEpisode.showId).then((show) {
+                  if (show == null) {
+                    Shows.updateShow(newEpisode.showId);
+                  }
+                });
+                _latestEpisodes.add(newEpisode);
+                _latestEpisodes.removeLast();
+
+                _db.insertEpisode(newEpisode);
+                print("Inserted episode: ${newEpisode.number}");
+                notifyListeners();
+              }
+            });
+          }
         }
-      }
+
+        await batch.commit(continueOnError: true);
+      });
     } else {
       // If the server did not return a 200 OK response,
       // then throw an exception.
@@ -165,9 +232,7 @@ class Episodes extends ChangeNotifier {
     }
 
     _loading = false;
-    if (somethingChanged) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   Episodes();
