@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import './data/shows.dart';
 import './data/episodes.dart';
@@ -70,11 +71,14 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _currentIndex = 0;
-  bool isSearching = false;
+  bool _isSearching = false;
+  bool _isFirstTime = false;
 
-  Filters filterProvider;
+  double _progress = 0;
 
-  final searchController = TextEditingController();
+  Filters _filterProvider;
+
+  final _searchController = TextEditingController();
 
   final List<Map<String, dynamic>> _children = [
     {'title': 'Home', 'widget': HomeScreen()},
@@ -92,97 +96,164 @@ class _HomeState extends State<Home> {
   }
 
   void _updateSearch() {
-    if (searchController.text.isNotEmpty)
-      filterProvider.updateSearch(searchController.text);
+    if (this._searchController.text.isNotEmpty)
+      this._filterProvider.updateSearch(this._searchController.text);
     else
-      filterProvider.clearSearch();
+      this._filterProvider.clearSearch();
+  }
+
+  void _setProgress(double value) {
+    this._progress = value;
+    if (this._progress == 1.0) {
+      setState(() {
+        this._isFirstTime = false;
+        prefs.setBool('isFirstTime', false);
+      });
+    }
+  }
+
+  SharedPreferences prefs;
+
+  initFirstTime() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      this._isFirstTime = (prefs.getBool('isFirstTime') ?? true);
+    });
   }
 
   @override
   void initState() {
     super.initState();
 
+    initFirstTime();
+
     // Start listening to changes.
-    searchController.addListener(_updateSearch);
+    this._searchController.addListener(_updateSearch);
+  }
+
+  Widget _buildSplash(double progress) {
+    return Scaffold(
+        backgroundColor: Color.fromRGBO(255, 127, 0, 1),
+        body: Center(
+            heightFactor: double.infinity,
+            widthFactor: double.infinity,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 150,
+                  child: Image.asset(
+                    'assets/icon/icon.png',
+                    fit: BoxFit.fitHeight,
+                  ),
+                ),
+                Text(
+                  'Initializing...\nPlease wait...',
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline6
+                      .copyWith(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                    width: 300,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          backgroundColor: Colors.white,
+                          value: progress,
+                        ),
+                        Text(
+                          "${(progress * 100).toInt()}%",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.white),
+                        )
+                      ],
+                    ))
+              ],
+            )));
   }
 
   @override
   Widget build(BuildContext context) {
-    filterProvider = Provider.of<Filters>(context, listen: false);
+    this._filterProvider = Provider.of<Filters>(context, listen: false);
+    final showProvider = Provider.of<Shows>(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: !isSearching
-            ? Text(_children[_currentIndex]['title'])
-            : TextField(
-                autofocus: true,
-                controller: searchController,
-                decoration: InputDecoration(
-                  hintText: "Search...",
-                  hintStyle: TextStyle(color: Colors.white),
-                  icon: Icon(
-                    Icons.search,
-                    color: Colors.white,
+    showProvider.shows;
+    _setProgress(showProvider.progress);
+
+    return this._isFirstTime
+        ? _buildSplash(showProvider.progress)
+        : Scaffold(
+            appBar: AppBar(
+              title: !this._isSearching
+                  ? Text(_children[_currentIndex]['title'])
+                  : TextField(
+                      autofocus: true,
+                      controller: this._searchController,
+                      decoration: InputDecoration(
+                        hintText: "Search...",
+                        hintStyle: TextStyle(color: Colors.white),
+                        icon: Icon(
+                          Icons.search,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: TextStyle(color: Colors.white),
+                    ),
+              actions: [
+                if (_currentIndex > 1)
+                  IconButton(
+                      icon:
+                          Icon(!this._isSearching ? Icons.search : Icons.close),
+                      onPressed: () {
+                        setState(() {
+                          this._isSearching = !this._isSearching;
+                          if (!this._isSearching) {
+                            this._searchController.text = '';
+                            this._filterProvider.clearSearch();
+                          }
+                        });
+                      }),
+              ],
+            ),
+            body: _children[_currentIndex]['widget'],
+            bottomNavigationBar: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                onTap: onTabTapped, // new
+                currentIndex: _currentIndex,
+                backgroundColor: Theme.of(context).primaryColor,
+                showUnselectedLabels: false,
+                selectedFontSize: 10,
+                items: [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home),
+                    title: Text('Home'),
                   ),
-                ),
-                style: TextStyle(color: Colors.white),
-              ),
-        actions: [
-          if (_currentIndex == 0 || _currentIndex > 1)
-            IconButton(
-                icon: Icon(!isSearching ? Icons.search : Icons.close),
-                onPressed: () {
-                  setState(() {
-                    isSearching = !isSearching;
-                    if (!isSearching) {
-                      searchController.text = '';
-                      filterProvider.clearSearch();
-                    }
-                  });
-                }),
-          // PopupMenuButton(onSelected: (String choice) {
-          //   if (choice == 'Settings') {
-          //     Navigator.of(context).pushNamed(PreferencesScreen.routeName);
-          //   }
-          // }, itemBuilder: (ctx) {
-          //   return popupMenuItems.map((choice) {
-          //     return PopupMenuItem<String>(value: choice, child: Text(choice));
-          //   }).toList();
-          // }),
-        ],
-      ),
-      body: _children[_currentIndex]['widget'],
-      bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          onTap: onTabTapped, // new
-          currentIndex: _currentIndex,
-          backgroundColor: Theme.of(context).primaryColor,
-          showUnselectedLabels: false,
-          selectedFontSize: 10,
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              title: Text('Home'),
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.rss_feed),
-              title: Text('Latest'),
-            ),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_today), title: Text('Curr. Season')),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.grid_on),
-              title: Text('All Shows'),
-            ),
-          ]),
-    );
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.rss_feed),
+                    title: Text('Latest'),
+                  ),
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.calendar_today),
+                      title: Text('Curr. Season')),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.grid_on),
+                    title: Text('All Shows'),
+                  ),
+                ]),
+          );
   }
 
   @override
   void dispose() {
     // Clean up the controller when the widget is removed from the
     // widget tree.
-    searchController.dispose();
+    this._searchController.dispose();
     super.dispose();
   }
 }

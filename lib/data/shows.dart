@@ -11,8 +11,14 @@ class Shows extends ChangeNotifier {
 
   List<Show> _shows = [];
 
+  int _apiShowsLenght = 0;
+
   List<Show> get shows {
     return [..._shows];
+  }
+
+  double get progress {
+      return _apiShowsLenght > 0 ? _shows.length / _apiShowsLenght : 0;
   }
 
   List<Show> get currentSeason {
@@ -57,19 +63,15 @@ class Shows extends ChangeNotifier {
     final response =
         await http.get('https://kpplus.kitsupixel.pt/api/v1/shows');
 
-    await _db.db.transaction((txn) async {
-      var batch = txn.batch();
-
       if (response.statusCode == 200) {
         final jsonShows = json.decode(response.body)['data'];
+        
+        _apiShowsLenght = jsonShows.length;
+        
         for (var i = 0; i < jsonShows.length; i++) {
-          if (i > 0 && i % 100 == 0) {
-            await batch.commit(continueOnError: true);
-            batch = txn.batch();
-          }
 
           Show newShow = Show.fromJson(jsonShows[i]);
-          _db.getShow(newShow.id).then((oldShow) {
+          var oldShow = await _db.getShow(newShow.id);
             if (oldShow != null) {
               if (oldShow != newShow) {
                 bool somethingChanged = false;
@@ -116,25 +118,23 @@ class Shows extends ChangeNotifier {
                 if (somethingChanged) {
                   _db.updateShow(oldShow);
                   print("Updated show: ${oldShow.title}");
-                  notifyListeners();
                 }
               }
             } else {
               _shows.add(newShow);
+
               _db.insertShow(newShow);
+              
               print("Inserted show: ${newShow.title}");
+              
               notifyListeners();
             }
-          });
         }
-
-        await batch.commit(continueOnError: true);
       } else {
         // If the server did not return a 200 OK response,
         // then throw an exception.
         throw Exception('Erro!');
       }
-    });
 
     _loading = false;
     notifyListeners();

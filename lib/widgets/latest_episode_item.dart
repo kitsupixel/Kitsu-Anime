@@ -27,7 +27,7 @@ class LatestEpisodeItem extends StatelessWidget {
     return Container(
       height: 125,
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 4),
+      margin: const EdgeInsets.only(bottom: 4, right: 4, left: 4),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -101,42 +101,6 @@ class LatestEpisodeItem extends StatelessWidget {
             )
           ],
         ),
-      ),
-    );
-
-    return ListTile(
-      leading: SizedBox(
-        height: 75,
-        child: AspectRatio(
-          aspectRatio: 2 / 3,
-          child: CachedNetworkImage(
-            imageUrl: show.thumbnail,
-            fit: BoxFit.fitHeight,
-            progressIndicatorBuilder: (context, url, downloadProgress) =>
-                Center(
-              child: CircularProgressIndicator(
-                value: downloadProgress.progress,
-              ),
-            ),
-            errorWidget: (context, url, error) => Center(
-              child: Icon(Icons.error, color: Theme.of(context).errorColor),
-            ),
-          ),
-        ),
-      ),
-      title: Text(
-        show.title.toUpperCase(),
-        style: Theme.of(context).textTheme.headline6.copyWith(fontSize: 16),
-        textAlign: TextAlign.left,
-        overflow: TextOverflow.ellipsis,
-        maxLines: 2,
-      ),
-      subtitle: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text("Episode " + this.number),
-          Text(DateFormat('yyyy-MM-dd').format(this.released)),
-        ],
       ),
     );
   }

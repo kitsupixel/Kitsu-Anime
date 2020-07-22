@@ -32,7 +32,12 @@ class LatestScreen extends StatelessWidget {
     episodes.sort((a, b) => _sortEpisodes(a, b));
 
     return Stack(children: [
-      ListView.builder(
+      GridView.builder(
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          
+          childAspectRatio: 3.0 / 1.0,
+          maxCrossAxisExtent: 360,
+        ),
         itemCount: episodes.length,
         itemBuilder: (ctx, index) {
           return LatestEpisodeItem(
@@ -42,6 +47,16 @@ class LatestScreen extends StatelessWidget {
           );
         },
       ),
+      // ListView.builder(
+      //   itemCount: episodes.length,
+      //   itemBuilder: (ctx, index) {
+      //     return LatestEpisodeItem(
+      //       showId: episodes[index].showId,
+      //       number: episodes[index].number,
+      //       released: episodes[index].releasedOn,
+      //     );
+      //   },
+      // ),
       Consumer<Episodes>(
           builder: (ctx, data, ch) {
             bool isLoading = data.loading;

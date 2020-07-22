@@ -48,6 +48,12 @@ dependencies:
   # Create Preference Screens easily with advanced features and subpages
   preferences: ^5.2.0
 
+  # Wraps platform-specific persistent storage for simple data (NSUserDefaults on iOS and macOS, SharedPreferences on Android, etc.).
+  shared_preferences: ^0.5.8
+
+  # Brings functionality to execute code after the first layout of a widget has been performed, i.e. after the first frame has been displayed.
+  after_layout: ^1.0.7+2
+
   # SQLite plugin for Flutter.
   sqflite: ^1.3.0
 
