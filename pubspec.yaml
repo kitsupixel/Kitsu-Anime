@@ -88,7 +88,9 @@ flutter:
   assets:
     - assets/icon/icon.png
     - assets/icon/icon-legacy.png
+    - assets/icon/icon-nomargin.png
     - assets/splash/splash.png
+    - assets/images/noimage.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
@@ -101,10 +103,10 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  fonts:
+     - family: Alata
+       fonts:
+         - asset: assets/fonts/Alata-Regular.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
