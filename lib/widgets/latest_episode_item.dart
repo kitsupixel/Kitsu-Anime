@@ -50,6 +50,10 @@ class LatestEpisodeItem extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: show.thumbnail,
                 fit: BoxFit.fitHeight,
+                placeholder: (context, url) => Image.asset(
+                  'assets/images/noimage.png',
+                  fit: BoxFit.fitWidth,
+                ),
                 progressIndicatorBuilder: (context, url, downloadProgress) =>
                     Center(
                   child: CircularProgressIndicator(
@@ -57,7 +61,7 @@ class LatestEpisodeItem extends StatelessWidget {
                   ),
                 ),
                 errorWidget: (context, url, error) => Center(
-                  child: Icon(Icons.error, color: Theme.of(context).errorColor),
+                  child: Icon(Icons.error, color: Theme.of(context).errorColor, size: 16.0,),
                 ),
               ),
             ),
