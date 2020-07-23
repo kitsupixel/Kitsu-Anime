@@ -27,7 +27,7 @@ class Episodes extends ChangeNotifier {
     if (_latestEpisodes.length == 0) {
       _fetchLatestEpisodes();
     }
-    return _latestEpisodes;
+    return [..._latestEpisodes];
   }
 
   Episode getEpisode(int episodeId) {
@@ -36,12 +36,7 @@ class Episodes extends ChangeNotifier {
   }
 
   List<Episode> getEpisodesByShow(int showId) {
-    List<Episode> response =
-        _episodes.where((element) => element.showId == showId).toList();
-    if (response.length == 0) {
-      _fetchShowEpisodes(showId);
-    }
-    return response;
+    return _episodes.where((element) => element.showId == showId).toList();
   }
 
   void updateShowEpisodes(int showId) {
@@ -49,6 +44,7 @@ class Episodes extends ChangeNotifier {
   }
 
   void _fetchShowEpisodes(int showId) async {
+    print("Called _fetchShowEpisodes");
     _loading = true;
 
     // First let's get the data from the database
@@ -72,44 +68,42 @@ class Episodes extends ChangeNotifier {
 
         var oldEpisode = await _db.getEpisode(newEpisode.id);
         if (oldEpisode != null) {
-          if (oldEpisode != newEpisode) {
-            bool somethingChanged = false;
-            if (oldEpisode.showId != newEpisode.showId) {
-              oldEpisode.showId = newEpisode.showId;
-              somethingChanged = true;
-            }
+          bool somethingChanged = false;
+          if (oldEpisode.showId != newEpisode.showId) {
+            oldEpisode.showId = newEpisode.showId;
+            somethingChanged = true;
+          }
 
-            if (oldEpisode.number != newEpisode.number) {
-              oldEpisode.number = newEpisode.number;
-              somethingChanged = true;
-            }
+          if (oldEpisode.number != newEpisode.number) {
+            oldEpisode.number = newEpisode.number;
+            somethingChanged = true;
+          }
 
-            if (oldEpisode.type != newEpisode.type) {
-              oldEpisode.type = newEpisode.type;
-              somethingChanged = true;
-            }
+          if (oldEpisode.type != newEpisode.type) {
+            oldEpisode.type = newEpisode.type;
+            somethingChanged = true;
+          }
 
-            if (oldEpisode.releasedOn != newEpisode.releasedOn) {
-              oldEpisode.releasedOn = newEpisode.releasedOn;
-              somethingChanged = true;
-            }
+          if (oldEpisode.releasedOn != newEpisode.releasedOn) {
+            oldEpisode.releasedOn = newEpisode.releasedOn;
+            somethingChanged = true;
+          }
 
-            if (oldEpisode.createdAt != newEpisode.createdAt) {
-              oldEpisode.createdAt = newEpisode.createdAt;
-              somethingChanged = true;
-            }
-            if (somethingChanged) {
-              await _db.updateEpisode(oldEpisode);
-              print("Updated episode: ${newEpisode.number}");
-            }
+          if (oldEpisode.createdAt != newEpisode.createdAt) {
+            oldEpisode.createdAt = newEpisode.createdAt;
+            somethingChanged = true;
+          }
+          if (somethingChanged) {
+            await _db.updateEpisode(oldEpisode);
+            print("Updated episode: ${newEpisode.number}");
           }
         } else {
           _episodes.add(newEpisode);
-          
+
           await _db.insertEpisode(newEpisode);
-          
+
           print("Inserted episode: ${newEpisode.number}");
-          
+
           notifyListeners();
         }
       }
@@ -124,6 +118,7 @@ class Episodes extends ChangeNotifier {
   }
 
   void _fetchLatestEpisodes() async {
+    print("Called _fetchLatestEpisodes");
     _loading = true;
 
     // First let's get the data from the database
@@ -193,8 +188,6 @@ class Episodes extends ChangeNotifier {
             await _db.insertEpisode(newEpisode);
 
             print("Inserted episode: ${newEpisode.number}");
-
-            notifyListeners();
           }
         }
       }
@@ -211,6 +204,7 @@ class Episodes extends ChangeNotifier {
   Episodes();
 
   void toggleDownloaded(int episodeId) async {
+    print("Called toggleDownloaded");
     Episode episode = getEpisode(episodeId);
     if (episode != null) {
       int index = _episodes.indexOf(episode);
@@ -223,6 +217,7 @@ class Episodes extends ChangeNotifier {
   }
 
   void markAsDownloaded(int episodeId) async {
+    print("Called markAsDownloaded");
     Episode episode = getEpisode(episodeId);
     if (episode != null) {
       int index = _episodes.indexOf(episode);
@@ -237,6 +232,7 @@ class Episodes extends ChangeNotifier {
   }
 
   void toggleWatched(int episodeId) async {
+    print("Called toggleWatched");
     Episode episode = getEpisode(episodeId);
     if (episode != null) {
       int index = _episodes.indexOf(episode);

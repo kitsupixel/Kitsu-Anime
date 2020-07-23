@@ -18,7 +18,7 @@ class Shows extends ChangeNotifier {
   }
 
   double get progress {
-      return _apiShowsLenght > 0 ? _shows.length / _apiShowsLenght : 0;
+    return _apiShowsLenght > 0 ? _shows.length / _apiShowsLenght : 0;
   }
 
   List<Show> get currentSeason {
@@ -48,6 +48,7 @@ class Shows extends ChangeNotifier {
   }
 
   void _fetchShows() async {
+    print("Called _fetchShows");
     _loading = true;
     notifyListeners();
 
@@ -63,84 +64,82 @@ class Shows extends ChangeNotifier {
     final response =
         await http.get('https://kpplus.kitsupixel.pt/api/v1/shows');
 
-      if (response.statusCode == 200) {
-        final jsonShows = json.decode(response.body)['data'];
-        
-        _apiShowsLenght = jsonShows.length;
-        
-        for (var i = 0; i < jsonShows.length; i++) {
+    if (response.statusCode == 200) {
+      final jsonShows = json.decode(response.body)['data'];
 
-          Show newShow = Show.fromJson(jsonShows[i]);
-          var oldShow = await _db.getShow(newShow.id);
-            if (oldShow != null) {
-              if (oldShow != newShow) {
-                bool somethingChanged = false;
-                if (oldShow.title != newShow.title) {
-                  oldShow.title = newShow.title;
-                  somethingChanged = true;
-                }
+      _apiShowsLenght = jsonShows.length;
 
-                if (oldShow.synopsis != newShow.synopsis) {
-                  oldShow.synopsis = newShow.synopsis;
-                  somethingChanged = true;
-                }
+      for (var i = 0; i < jsonShows.length; i++) {
+        Show newShow = Show.fromJson(jsonShows[i]);
+        var oldShow = await _db.getShow(newShow.id);
+        if (oldShow != null) {
+          bool somethingChanged = false;
+          if (oldShow.title != newShow.title) {
+            oldShow.title = newShow.title;
+            somethingChanged = true;
+          }
 
-                if (oldShow.thumbnail != newShow.thumbnail) {
-                  oldShow.thumbnail = newShow.thumbnail;
-                  somethingChanged = true;
-                }
+          if (oldShow.synopsis != newShow.synopsis) {
+            oldShow.synopsis = newShow.synopsis;
+            somethingChanged = true;
+          }
 
-                if (oldShow.season != newShow.season) {
-                  oldShow.season = newShow.season;
-                  somethingChanged = true;
-                }
+          if (oldShow.thumbnail != newShow.thumbnail) {
+            oldShow.thumbnail = newShow.thumbnail;
+            somethingChanged = true;
+          }
 
-                if (oldShow.year != newShow.year) {
-                  oldShow.year = newShow.year;
-                  somethingChanged = true;
-                }
+          if (oldShow.season != newShow.season) {
+            oldShow.season = newShow.season;
+            somethingChanged = true;
+          }
 
-                if (oldShow.ongoing != newShow.ongoing) {
-                  oldShow.ongoing = newShow.ongoing;
-                  somethingChanged = true;
-                }
+          if (oldShow.year != newShow.year) {
+            oldShow.year = newShow.year;
+            somethingChanged = true;
+          }
 
-                if (oldShow.active != newShow.active) {
-                  oldShow.active = newShow.active;
-                  somethingChanged = true;
-                }
+          if (oldShow.ongoing != newShow.ongoing) {
+            oldShow.ongoing = newShow.ongoing;
+            somethingChanged = true;
+          }
 
-                if (oldShow.title != newShow.title) {
-                  oldShow.title = newShow.title;
-                  somethingChanged = true;
-                }
+          if (oldShow.active != newShow.active) {
+            oldShow.active = newShow.active;
+            somethingChanged = true;
+          }
 
-                if (somethingChanged) {
-                  _db.updateShow(oldShow);
-                  print("Updated show: ${oldShow.title}");
-                }
-              }
-            } else {
-              _shows.add(newShow);
+          if (oldShow.title != newShow.title) {
+            oldShow.title = newShow.title;
+            somethingChanged = true;
+          }
 
-              _db.insertShow(newShow);
-              
-              print("Inserted show: ${newShow.title}");
-              
-              notifyListeners();
-            }
+          if (somethingChanged) {
+            await _db.updateShow(oldShow);
+            print("Updated show: ${oldShow.title}");
+          }
+        } else {
+          _shows.add(newShow);
+
+          await _db.insertShow(newShow);
+
+          print("Inserted show: ${newShow.title}");
+
+          notifyListeners();
         }
-      } else {
-        // If the server did not return a 200 OK response,
-        // then throw an exception.
-        throw Exception('Erro!');
       }
+    } else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      throw Exception('Erro!');
+    }
 
     _loading = false;
     notifyListeners();
   }
 
   static void updateShow(int showId) async {
+    print("Called updateShow");
     // Then let's see if there were changes and update the db
     final response =
         await http.get('https://kpplus.kitsupixel.pt/api/v1/shows/$showId');
@@ -222,6 +221,7 @@ class Shows extends ChangeNotifier {
   }
 
   void toggleFavorite(int showId) async {
+    print("Called toggleFavorite");
     Show show = getShow(showId);
     if (show != null) {
       int index = _shows.indexOf(show);
@@ -234,6 +234,7 @@ class Shows extends ChangeNotifier {
   }
 
   void toggleWatched(int showId) async {
+    print("Called toggleWatched");
     Show show = getShow(showId);
     if (show != null) {
       int index = _shows.indexOf(show);
