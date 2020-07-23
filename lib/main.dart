@@ -12,7 +12,6 @@ import './screens/all_shows_screen.dart';
 import './screens/current_season_screen.dart';
 import './screens/show_detail_screen.dart';
 import './screens/episode_detail_screen.dart';
-import './screens/preferences_screen.dart';
 import './screens/latest_screen.dart';
 
 void main() {
@@ -44,6 +43,7 @@ class MyApp extends StatelessWidget {
             primarySwatch: Colors.deepOrange,
             accentColor: Colors.deepOrangeAccent,
             visualDensity: VisualDensity.adaptivePlatformDensity,
+            fontFamily: 'Alata',
             bottomNavigationBarTheme: BottomNavigationBarThemeData(
               backgroundColor: Colors.deepOrange,
               selectedItemColor: Colors.white,
@@ -53,7 +53,6 @@ class MyApp extends StatelessWidget {
         routes: {
           ShowDetailScreen.routeName: (ctx) => ShowDetailScreen(),
           EpisodeDetailScreen.routeName: (ctx) => EpisodeDetailScreen(),
-          PreferencesScreen.routeName: (ctx) => PreferencesScreen()
         },
       ),
     );
@@ -141,14 +140,17 @@ class _HomeState extends State<Home> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox(
-                  height: 150,
+                  height: 75,
                   child: Image.asset(
-                    'assets/icon/icon.png',
-                    fit: BoxFit.fitHeight,
+                    'assets/icon/icon-nomargin.png',
+                    fit: BoxFit.fitHeight
                   ),
                 ),
+                SizedBox(
+                  height: 10,
+                ),
                 Text(
-                  'Initializing...\nPlease wait...',
+                  'First time initialization\nThis may take a moment...',
                   style: Theme.of(context)
                       .textTheme
                       .headline6
@@ -156,7 +158,7 @@ class _HomeState extends State<Home> {
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(
-                  height: 10,
+                  height: 15,
                 ),
                 Container(
                     width: 300,
@@ -170,12 +172,74 @@ class _HomeState extends State<Home> {
                         Text(
                           "${(progress * 100).toInt()}%",
                           textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: Colors.white, fontSize: 11),
                         )
                       ],
                     ))
               ],
             )));
+  }
+
+  Widget _buildMain() {
+    return Scaffold(
+      appBar: AppBar(
+        title: !this._isSearching
+            ? Text(_children[_currentIndex]['title'])
+            : TextField(
+          autofocus: true,
+          controller: this._searchController,
+          decoration: InputDecoration(
+            hintText: "Search...",
+            hintStyle: TextStyle(color: Colors.white),
+            icon: Icon(
+              Icons.search,
+              color: Colors.white,
+            ),
+          ),
+          style: TextStyle(color: Colors.white),
+        ),
+        actions: [
+          if (_currentIndex > 1)
+            IconButton(
+                icon:
+                Icon(!this._isSearching ? Icons.search : Icons.close),
+                onPressed: () {
+                  setState(() {
+                    this._isSearching = !this._isSearching;
+                    if (!this._isSearching) {
+                      this._searchController.text = '';
+                      this._filterProvider.clearSearch();
+                    }
+                  });
+                }),
+        ],
+      ),
+      body: _children[_currentIndex]['widget'],
+      bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          onTap: onTabTapped, // new
+          currentIndex: _currentIndex,
+          backgroundColor: Theme.of(context).primaryColor,
+          showUnselectedLabels: false,
+          selectedFontSize: 10,
+          items: [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              title: Text('Home'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.rss_feed),
+              title: Text('Latest'),
+            ),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_today),
+                title: Text('Curr. Season')),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.grid_on),
+              title: Text('All Shows'),
+            ),
+          ]),
+    );
   }
 
   @override
@@ -188,65 +252,7 @@ class _HomeState extends State<Home> {
 
     return this._isFirstTime
         ? _buildSplash(showProvider.progress)
-        : Scaffold(
-            appBar: AppBar(
-              title: !this._isSearching
-                  ? Text(_children[_currentIndex]['title'])
-                  : TextField(
-                      autofocus: true,
-                      controller: this._searchController,
-                      decoration: InputDecoration(
-                        hintText: "Search...",
-                        hintStyle: TextStyle(color: Colors.white),
-                        icon: Icon(
-                          Icons.search,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: TextStyle(color: Colors.white),
-                    ),
-              actions: [
-                if (_currentIndex > 1)
-                  IconButton(
-                      icon:
-                          Icon(!this._isSearching ? Icons.search : Icons.close),
-                      onPressed: () {
-                        setState(() {
-                          this._isSearching = !this._isSearching;
-                          if (!this._isSearching) {
-                            this._searchController.text = '';
-                            this._filterProvider.clearSearch();
-                          }
-                        });
-                      }),
-              ],
-            ),
-            body: _children[_currentIndex]['widget'],
-            bottomNavigationBar: BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                onTap: onTabTapped, // new
-                currentIndex: _currentIndex,
-                backgroundColor: Theme.of(context).primaryColor,
-                showUnselectedLabels: false,
-                selectedFontSize: 10,
-                items: [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home),
-                    title: Text('Home'),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.rss_feed),
-                    title: Text('Latest'),
-                  ),
-                  BottomNavigationBarItem(
-                      icon: Icon(Icons.calendar_today),
-                      title: Text('Curr. Season')),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.grid_on),
-                    title: Text('All Shows'),
-                  ),
-                ]),
-          );
+        : _buildMain();
   }
 
   @override
