@@ -45,11 +45,13 @@ class EpisodeDetailScreen extends StatelessWidget {
               itemCount: links.length,
               itemBuilder: (ctx, i) {
                 return EpisodeDetailItem(
+                  episodeId: links[i].id,
                   quality: links[i].quality,
                   link: links[i].link,
                   type: links[i].type,
                   seeds: links[i].seeds,
                   leeches: links[i].leeches,
+                  episodeProvider: episodeProvider,
                 );
               },
             ),
