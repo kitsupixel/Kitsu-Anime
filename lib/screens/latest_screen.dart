@@ -34,7 +34,6 @@ class LatestScreen extends StatelessWidget {
     return Stack(children: [
       GridView.builder(
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-          
           childAspectRatio: 3.0 / 1.0,
           maxCrossAxisExtent: 360,
         ),
@@ -47,23 +46,11 @@ class LatestScreen extends StatelessWidget {
           );
         },
       ),
-      // ListView.builder(
-      //   itemCount: episodes.length,
-      //   itemBuilder: (ctx, index) {
-      //     return LatestEpisodeItem(
-      //       showId: episodes[index].showId,
-      //       number: episodes[index].number,
-      //       released: episodes[index].releasedOn,
-      //     );
-      //   },
-      // ),
       Consumer<Episodes>(
-          builder: (ctx, data, ch) {
-            bool isLoading = data.loading;
-
-            return isLoading ? LinearProgressIndicator() : SizedBox();
-          },
-        )
+        builder: (ctx, data, ch) {
+          return data.loading ? LinearProgressIndicator() : SizedBox();
+        },
+      )
     ]);
   }
 }
