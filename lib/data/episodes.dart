@@ -106,7 +106,7 @@ class Episodes extends ChangeNotifier {
         } else {
           _episodes.add(newEpisode);
           
-          _db.insertEpisode(newEpisode);
+          await _db.insertEpisode(newEpisode);
           
           print("Inserted episode: ${newEpisode.number}");
           
@@ -190,7 +190,7 @@ class Episodes extends ChangeNotifier {
 
             if (_latestEpisodes.length > 15) _latestEpisodes.removeLast();
 
-            _db.insertEpisode(newEpisode);
+            await _db.insertEpisode(newEpisode);
 
             print("Inserted episode: ${newEpisode.number}");
 
