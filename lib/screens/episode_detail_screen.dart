@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:intent/intent.dart' as android_intent;
+import 'package:intent/action.dart' as android_action;
 
 import '../models/episode.dart';
 import '../models/link.dart';
@@ -14,6 +17,39 @@ class EpisodeDetailScreen extends StatelessWidget {
   static const routeName = '/shows/detail/episode';
 
   EpisodeDetailScreen();
+
+  _errorSnackBar(Exception e, BuildContext context) {
+    Scaffold.of(context);
+    final scaffold = Scaffold.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+        content: Text('Could open the link...' + e.toString()),
+        action: SnackBarAction(
+            label: 'CLOSE', onPressed: scaffold.hideCurrentSnackBar),
+      ),
+    );
+    print(e.toString());
+  }
+
+  _launchURL(String url, BuildContext context) async {
+    try {
+      if (Platform.isAndroid) {
+        android_intent.Intent()
+          ..setAction(android_action.Action.ACTION_VIEW)
+          ..setData(Uri.parse(url))
+          ..startActivity();
+      } else {
+        // Se não for android vamos tentar abrir o browser para
+        if (await canLaunch(url)) {
+          await launch(url);
+        } else {
+          _errorSnackBar(Exception("Can't lauch the url"), context);
+        }
+      }
+    } catch (e) {
+      _errorSnackBar(e, context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,13 +81,14 @@ class EpisodeDetailScreen extends StatelessWidget {
               itemCount: links.length,
               itemBuilder: (ctx, i) {
                 return EpisodeDetailItem(
-                  episodeId: links[i].id,
                   quality: links[i].quality,
-                  link: links[i].link,
                   type: links[i].type,
                   seeds: links[i].seeds,
                   leeches: links[i].leeches,
-                  episodeProvider: episodeProvider,
+                  onTapCallback: () {
+                    _launchURL(links[i].link, ctx);
+                    episodeProvider.markAsDownloaded(links[i].episodeId);
+                  },
                 );
               },
             ),

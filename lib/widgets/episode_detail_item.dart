@@ -1,73 +1,29 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:intent/intent.dart' as android_intent;
-import 'package:intent/action.dart' as android_action;
 
 import '../data/episodes.dart';
 
 import './ink_wrapper.dart';
 
 class EpisodeDetailItem extends StatelessWidget {
-  final int episodeId;
   final String quality;
-  final String link;
   final String type;
   final int seeds;
   final int leeches;
-  final Episodes episodeProvider;
+  final Function onTapCallback;
 
   EpisodeDetailItem({
     Key key,
-    @required this.episodeId,
     @required this.quality,
-    @required this.link,
     @required this.type,
-    @required this.episodeProvider,
+    @required this.onTapCallback,
     this.seeds,
     this.leeches,
   }) : super(key: key);
 
-  _errorSnackBar(Exception e, BuildContext context) {
-    Scaffold.of(context);
-    final scaffold = Scaffold.of(context);
-    scaffold.showSnackBar(
-      SnackBar(
-        content: Text('Could open the link...' + e.toString()),
-        action: SnackBarAction(
-            label: 'CLOSE', onPressed: scaffold.hideCurrentSnackBar),
-      ),
-    );
-    print(e.toString());
-  }
-
-  _launchURL(String url, BuildContext context) async {
-    try {
-      if (Platform.isAndroid) {
-        android_intent.Intent()
-          ..setAction(android_action.Action.ACTION_VIEW)
-          ..setData(Uri.parse(url))
-          ..startActivity();
-      } else {
-        // Se não for android vamos tentar abrir o browser para
-        if (await canLaunch(url)) {
-          await launch(url);
-        } else {
-          _errorSnackBar(Exception("Can't lauch the url"), context);
-        }
-      }
-    } catch (e) {
-      _errorSnackBar(e, context);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return InkWrapper(
-      onTap: () {
-        _launchURL(this.link, context);
-        this.episodeProvider.markAsDownloaded(this.episodeId);
-      },
+      onTap: () => this.onTapCallback(),
       child: Container(
         //decoration: BoxDecoration(color: Colors.blue),
         margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
