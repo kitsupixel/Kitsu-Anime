@@ -69,13 +69,13 @@ class LatestEpisodeItem extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(
-                    left: 5, top: 35, right: 10, bottom: 5),
+                    left: 5, top: 25, right: 10, bottom: 5),
                 child: Column(
-                  //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      flex: 3,
+                      flex: 2,
                       child: Text(
                         show.title.toUpperCase(),
                         style: Theme.of(context)
@@ -88,7 +88,6 @@ class LatestEpisodeItem extends StatelessWidget {
                       ),
                     ),
                     Expanded(
-                      flex: 1,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

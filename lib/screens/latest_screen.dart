@@ -7,8 +7,16 @@ import '../models/episode.dart';
 
 import '../widgets/latest_episode_item.dart';
 
-class LatestScreen extends StatelessWidget {
+class LatestScreen extends StatefulWidget {
   static const routeName = '/shows/latest';
+
+  @override
+  _LatestScreenState createState() => _LatestScreenState();
+}
+
+class _LatestScreenState extends State<LatestScreen> {
+  bool calledUpdate = false;
+  var refreshKey = GlobalKey<RefreshIndicatorState>();
 
   int _sortEpisodes(Episode a, Episode b) {
     int comparator = 0;
@@ -23,19 +31,30 @@ class LatestScreen extends StatelessWidget {
     return comparator;
   }
 
+  Future _refreshList(Episodes episodeProvider) async {
+    await episodeProvider.updateLatestEpisodes();
+  }
+
   @override
   Widget build(BuildContext context) {
     final episodeProvider = Provider.of<Episodes>(context);
+
+    if (!calledUpdate) {
+      episodeProvider.updateLatestEpisodes();
+      calledUpdate = true;
+    }
 
     List<Episode> episodes = episodeProvider.latestEpisodes;
 
     episodes.sort((a, b) => _sortEpisodes(a, b));
 
-    return Stack(children: [
-      GridView.builder(
+    return RefreshIndicator(
+      onRefresh: () => _refreshList(episodeProvider),
+      key: refreshKey,
+      child: GridView.builder(
         gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
           childAspectRatio: 3.0 / 1.0,
-          maxCrossAxisExtent: 360,
+          maxCrossAxisExtent: 500,
         ),
         itemCount: episodes.length,
         itemBuilder: (ctx, index) {
@@ -46,11 +65,6 @@ class LatestScreen extends StatelessWidget {
           );
         },
       ),
-      Consumer<Episodes>(
-        builder: (ctx, data, ch) {
-          return data.loading ? LinearProgressIndicator() : SizedBox();
-        },
-      )
-    ]);
+    );
   }
 }
