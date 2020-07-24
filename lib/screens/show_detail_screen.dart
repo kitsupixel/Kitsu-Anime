@@ -9,6 +9,7 @@ import '../data/episodes.dart';
 import '../models/show.dart';
 
 import '../widgets/show_episode_list.dart';
+import '../widgets/custom_flexible_space_bar.dart';
 
 class ShowDetailScreen extends StatelessWidget {
   static const routeName = '/shows/detail';
@@ -122,7 +123,7 @@ class ShowDetailScreen extends StatelessWidget {
             pinned: true,
             expandedHeight: 3 * mediaQuery.size.width / 2,
             // title: Text(show.title),
-            flexibleSpace: FlexibleSpaceBar(
+            flexibleSpace: CustomFlexibleSpaceBar(
               background: CachedNetworkImage(
                 imageUrl: show.thumbnail,
                 fit: BoxFit.fitHeight,
@@ -151,8 +152,7 @@ class ShowDetailScreen extends StatelessWidget {
   Widget _buildLandscape(BuildContext context, Show show,
       MediaQueryData mediaQuery, Episodes episodeProvider) {
     return Scaffold(
-      appBar: AppBar(
-      ),
+      appBar: AppBar(),
       body: Container(
         width: double.infinity,
         child: Row(
