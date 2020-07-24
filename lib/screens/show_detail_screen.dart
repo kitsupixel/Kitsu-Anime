@@ -152,33 +152,41 @@ class ShowDetailScreen extends StatelessWidget {
       MediaQueryData mediaQuery, Episodes episodeProvider) {
     return Scaffold(
       appBar: AppBar(
-        actions: [_buildFabs(context, show)],
       ),
       body: Container(
         width: double.infinity,
         child: Row(
           children: [
             // Imagem
-            Container(
-              height: mediaQuery.size.height,
-              decoration: BoxDecoration(color: Colors.blue),
-              child: AspectRatio(
-                aspectRatio: 2 / 3,
-                child: CachedNetworkImage(
-                  imageUrl: show.thumbnail,
-                  fit: BoxFit.fitHeight,
-                  progressIndicatorBuilder: (context, url, downloadProgress) =>
-                      Center(
-                    child: CircularProgressIndicator(
-                      value: downloadProgress.progress,
+            Stack(
+              children: [
+                Container(
+                  height: mediaQuery.size.height,
+                  decoration: BoxDecoration(color: Colors.blue),
+                  child: AspectRatio(
+                    aspectRatio: 2 / 3,
+                    child: CachedNetworkImage(
+                      imageUrl: show.thumbnail,
+                      fit: BoxFit.fitHeight,
+                      progressIndicatorBuilder:
+                          (context, url, downloadProgress) => Center(
+                        child: CircularProgressIndicator(
+                          value: downloadProgress.progress,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Center(
+                        child: Icon(Icons.error,
+                            color: Theme.of(context).errorColor),
+                      ),
                     ),
                   ),
-                  errorWidget: (context, url, error) => Center(
-                    child:
-                        Icon(Icons.error, color: Theme.of(context).errorColor),
-                  ),
                 ),
-              ),
+                Positioned(
+                  right: 10,
+                  bottom: 10,
+                  child: _buildFabs(context, show),
+                )
+              ],
             ),
             Expanded(
               flex: 2,
