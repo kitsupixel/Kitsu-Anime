@@ -23,6 +23,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final showProvider = Provider.of<Shows>(context);
 
+    // To run only one time
+    if (!updatedLatest) {
+      Provider.of<Episodes>(context, listen: false).updateLatestEpisodes();
+      updatedLatest = true;
+    }
+
     List<Show> favoriteShows =
         showProvider.shows.where((element) => element.favorite).toList();
 
@@ -107,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Text(
-              'Your seen',
+              'Your watched',
               style: Theme.of(context).textTheme.headline6,
             ),
           ),

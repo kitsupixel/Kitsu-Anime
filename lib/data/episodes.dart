@@ -24,12 +24,9 @@ class Episodes extends ChangeNotifier {
   }
 
   List<Episode> get latestEpisodes {
-    if (_latestEpisodes.length == 0) {
-      _fetchLatestEpisodes();
-    }
     return [..._latestEpisodes];
   }
-
+  
   Episode getEpisode(int episodeId) {
     return _episodes.firstWhere((element) => element.id == episodeId,
         orElse: () => null);
@@ -39,11 +36,15 @@ class Episodes extends ChangeNotifier {
     return _episodes.where((element) => element.showId == showId).toList();
   }
 
-  void updateShowEpisodes(int showId) {
-    _fetchShowEpisodes(showId);
+  Future updateLatestEpisodes() async {
+    await _fetchLatestEpisodes();
   }
 
-  void _fetchShowEpisodes(int showId) async {
+  Future updateShowEpisodes(int showId) async {
+    await _fetchShowEpisodes(showId);
+  }
+
+  Future _fetchShowEpisodes(int showId) async {
     print("Called _fetchShowEpisodes");
     _loading = true;
 
@@ -117,7 +118,7 @@ class Episodes extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _fetchLatestEpisodes() async {
+  Future _fetchLatestEpisodes() async {
     print("Called _fetchLatestEpisodes");
     _loading = true;
 
