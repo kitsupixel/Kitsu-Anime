@@ -19,6 +19,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool updatedLatest = false;
 
+  int _sortLatestEpisodes(Episode a, Episode b) {
+    int comparator = 0;
+
+    if (b.releasedOn.isAfter(a.releasedOn))
+      comparator = 1;
+    else if (b.releasedOn.isAtSameMomentAs(a.releasedOn)) {
+      comparator = b.id.compareTo(a.id);
+    } else
+      comparator = -1;
+
+    return comparator;
+  }
+
   @override
   Widget build(BuildContext context) {
     final showProvider = Provider.of<Shows>(context);
@@ -56,9 +69,13 @@ class _HomeScreenState extends State<HomeScreen> {
         Consumer<Episodes>(builder: (ctx, episodeProvider, ch) {
           List<Show> recentShows = [];
           List<Episode> latestEpisodes = episodeProvider.latestEpisodes;
+          
+          latestEpisodes.sort((a, b) => _sortLatestEpisodes(a, b));
+
           for (var item in latestEpisodes) {
             recentShows.add(showProvider.shows
-                .firstWhere((element) => element.id == item.showId));
+                .firstWhere((element) => element.id == item.showId)
+            );
           }
 
           return Container(
